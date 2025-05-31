@@ -60,7 +60,7 @@ config :spark,
 config :grizzler,
   ecto_repos: [Grizzler.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [Grizzler.Accounts]
+  ash_domains: [Grizzler.Accounts, Grizzler.Blog]
 
 # Configures the endpoint
 config :grizzler, GrizzlerWeb.Endpoint,

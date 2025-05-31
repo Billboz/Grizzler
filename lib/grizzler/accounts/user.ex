@@ -40,6 +40,10 @@ defmodule Grizzler.Accounts.User do
   actions do
     defaults [:read]
 
+    create :create do
+      accept [:email]
+    end
+
     read :get_by_subject do
       description "Get a user by the subject claim in a JWT"
       argument :subject, :string, allow_nil?: false
@@ -102,6 +106,12 @@ defmodule Grizzler.Accounts.User do
 
     attribute :email, :ci_string do
       allow_nil? false
+      public? true
+    end
+  end
+
+  relationships do
+    has_many :posts, Grizzler.Blog.Post do
       public? true
     end
   end
