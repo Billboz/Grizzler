@@ -1,0 +1,208 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: Essential Ash patterns, query macros, and CRUD operations that AI must follow
+globs: lib/**/*.ex, test/**/*.ex
+alwaysApply: true
+---
+
+# Essential Ash Patterns & Query Macros
+
+## Core Requirements
+
+- **Always require Ash.Query in any file using Ash query macros**
+  - Place `require Ash.Query` at the top, after `use`/`defmodule`
+  - Example:
+    ```elixir
+    defmodule MyApp.MyTest do
+      use MyApp.DataCase
+      require Ash.Query
+      # ...
+    end
+    ```
+
+- **Always require Ash.Expr when using expr/1 macro**
+  - Required for complex filter expressions
+  - Example:
+    ```elixir
+    defmodule MyApp.Accounts do
+      require Ash.Query
+      require Ash.Expr
+
+      def find_active_users do
+        User
+        |> Ash.Query.filter(expr(status == :active and inserted_at > ago(30, :day)))
+        |> Ash.read!(domain: __MODULE__)
+      end
+    end
+    ```
+
+## Basic CRUD Patterns
+
+### Creating Resources
+```elixir
+# Always use Ash.Changeset.for_create/3
+{:ok, user} = 
+  User
+  |> Ash.Changeset.for_create(:create, %{name: "John", email: "john@example.com"})
+  |> Ash.create(domain: MyApp.Accounts)
+
+# For tests, use the bang version
+user = 
+  User
+  |> Ash.Changeset.for_create(:create, %{name: "John", email: "john@example.com"})
+  |> Ash.create!(domain: MyApp.Accounts)
+```
+
+### Reading Resources
+```elixir
+# Simple queries
+users = Ash.read!(User, domain: MyApp.Accounts)
+
+# With filters using keyword syntax
+active_users = 
+  User
+  |> Ash.Query.filter(status: :active)
+  |> Ash.read!(domain: MyApp.Accounts)
+
+# Complex filters with expr/1
+recent_active_users = 
+  User
+  |> Ash.Query.filter(expr(status == :active and inserted_at > ago(7, :day)))
+  |> Ash.read!(domain: MyApp.Accounts)
+
+# Loading relationships
+users_with_posts = 
+  User
+  |> Ash.Query.load(:posts)
+  |> Ash.read!(domain: MyApp.Accounts)
+```
+
+### Updating Resources
+```elixir
+# Update with changeset
+{:ok, updated_user} = 
+  user
+  |> Ash.Changeset.for_update(:update, %{name: "New Name"})
+  |> Ash.update(domain: MyApp.Accounts)
+
+# Bulk updates
+Ash.bulk_update!(User, :deactivate, %{status: :inactive}, 
+  domain: MyApp.Accounts,
+  filter: expr(last_login < ago(90, :day))
+)
+```
+
+### Destroying Resources
+```elixir
+# Single destroy
+:ok = 
+  user
+  |> Ash.Changeset.for_destroy(:destroy)
+  |> Ash.destroy(domain: MyApp.Accounts)
+
+# Bulk destroy
+Ash.bulk_destroy!(User, :destroy, %{}, 
+  domain: MyApp.Accounts,
+  filter: expr(status == :deleted)
+)
+```
+
+## Query Patterns
+
+### Filtering
+```elixir
+# Simple equality
+User |> Ash.Query.filter(email: "john@example.com")
+
+# Comparison operators with expr/1
+User |> Ash.Query.filter(expr(age > 18))
+
+# String operations
+User |> Ash.Query.filter(expr(contains(name, "John")))
+
+# Date/time operations
+User |> Ash.Query.filter(expr(inserted_at > ago(30, :day)))
+
+# Boolean operations
+User |> Ash.Query.filter(expr(active == true and verified == true))
+
+# Relationship filters
+User |> Ash.Query.filter(expr(exists(posts, title == "Important")))
+```
+
+### Sorting and Pagination
+```elixir
+# Sorting
+User 
+|> Ash.Query.sort([:name, {:inserted_at, :desc}])
+|> Ash.read!(domain: MyApp.Accounts)
+
+# Pagination
+User
+|> Ash.Query.page(offset: 0, limit: 10)
+|> Ash.read!(domain: MyApp.Accounts)
+```
+
+## Test Patterns
+
+### Basic Test Setup
+```elixir
+defmodule MyApp.AccountsTest do
+  use MyApp.DataCase
+  require Ash.Query
+
+  alias MyApp.Accounts.User
+
+  # Helper function for creating test data
+  defp create_user(attrs \\ %{}) do
+    defaults = %{name: "Test User", email: "test@example.com"}
+    
+    User
+    |> Ash.Changeset.for_create(:create, Map.merge(defaults, attrs))
+    |> Ash.create!(domain: MyApp.Accounts)
+  end
+end
+```
+
+### Testing Relationships
+```elixir
+test "loads user posts" do
+  user = create_user()
+  post = create_post(user_id: user.id)
+  
+  user_with_posts = 
+    User
+    |> Ash.Query.filter(id: ^user.id)
+    |> Ash.Query.load(:posts)
+    |> Ash.read_one!(domain: MyApp.Accounts)
+  
+  assert length(user_with_posts.posts) == 1
+  assert hd(user_with_posts.posts).id == post.id
+end
+```
+
+## Common Pitfalls to Avoid
+
+- **DON'T** use raw Ecto queries: `Repo.all(User)` ❌
+- **DO** use Ash queries: `Ash.read!(User, domain: MyApp.Accounts)` ✅
+
+- **DON'T** forget to require Ash.Query when using filter macros ❌
+- **DO** always add `require Ash.Query` at the top ✅
+
+- **DON'T** forget the domain option: `Ash.read!(User)` ❌
+- **DO** always specify domain: `Ash.read!(User, domain: MyApp.Accounts)` ✅
+
+- **DON'T** use direct struct creation: `%User{name: "John"}` ❌
+- **DO** use changesets: `Ash.Changeset.for_create(User, :create, %{name: "John"})` ✅
+
+## Resource References
+
+For more comprehensive patterns and examples:
+- [ash.md](mdc:.cursor/resources/ash.md) - Complete Ash reference
+- [ash_patterns_and_lessons.md](mdc:.cursor/resources/ash_patterns_and_lessons.md) - Project-specific patterns
+- [testing_tdd.md](mdc:.cursor/resources/testing_tdd.md) - TDD patterns
+- [ash_dev_flow.mdc](mdc:.cursor/rules/ash_dev_flow.mdc) - Development workflow

@@ -1,0 +1,133 @@
+{
+  "meta": {
+    "generatedAt": "2025-05-30T02:21:58.899Z",
+    "tasksAnalyzed": 15,
+    "totalTasks": 15,
+    "analysisCount": 15,
+    "thresholdScore": 5,
+    "projectName": "Taskmaster",
+    "usedResearch": true
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 1,
+      "taskTitle": "Project Setup with Ash Framework and Phoenix",
+      "complexityScore": 6,
+      "recommendedSubtasks": 7,
+      "reasoning": "This task involves setting up multiple technologies (Ash Framework, Phoenix, PostgreSQL) with specific version requirements. While the steps are well-defined, there are many dependencies to configure correctly, and proper initialization is critical for the entire project. The task requires environment setup, dependency management, and configuration of multiple components.",
+      "expansionPrompt": "Break down the Project Setup task into subtasks covering: 1) Environment preparation, 2) Phoenix project creation, 3) Ash Framework integration, 4) Database configuration, 5) Tailwind setup, 6) Git initialization, and 7) Testing the setup. Include specific commands and configuration details for each subtask."
+    },
+    {
+      "taskId": 2,
+      "taskTitle": "Implement User Resource with Magic Link Authentication",
+      "complexityScore": 7,
+      "recommendedSubtasks": 6,
+      "reasoning": "This task involves implementing a core resource with authentication, which is fundamental to the application. It requires setting up Ash Authentication with magic links, configuring email delivery, and establishing relationships with other resources. The authentication flow adds significant complexity.",
+      "expansionPrompt": "Divide the User Resource implementation into subtasks covering: 1) Basic User resource definition, 2) Magic link authentication configuration, 3) User relationships setup, 4) User management actions, 5) Authentication UI components integration, and 6) Email delivery configuration. Include specific Ash DSL code for each component."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Implement Task Resource and Relationships",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "reasoning": "This task involves creating a complex resource with numerous attributes, validations, and relationships. The Task resource is central to the application's functionality and requires careful implementation of constraints and relationships with other resources.",
+      "expansionPrompt": "Break down the Task Resource implementation into subtasks covering: 1) Basic Task resource definition with attributes, 2) Relationship configuration with User and other resources, 3) Validation rules implementation, 4) Task management actions (CRUD), and 5) Query implementation for filtering tasks. Include specific Ash DSL code for each component."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "Implement DailyTask Resource",
+      "complexityScore": 7,
+      "recommendedSubtasks": 6,
+      "reasoning": "This task involves implementing a resource with complex state transitions, time tracking, and point calculations. The workflow actions (begin, complete, approve) add significant complexity, as does the relationship management with User and Task resources.",
+      "expansionPrompt": "Divide the DailyTask Resource implementation into subtasks covering: 1) Basic DailyTask resource definition, 2) Relationship configuration with User and Task, 3) Task workflow actions implementation (begin_task, complete_task, approve_task), 4) Time tracking calculations, 5) Points calculation and awarding, and 6) Aggregation queries for scores. Include specific Ash DSL code for each component."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Implement GrowthTaskCompletion Resource",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "reasoning": "This task is moderately complex, involving a resource with uniqueness constraints and relationships. It's simpler than the DailyTask resource as it doesn't involve state transitions, but still requires careful implementation of constraints and relationships.",
+      "expansionPrompt": "Break down the GrowthTaskCompletion Resource implementation into subtasks covering: 1) Basic GrowthTaskCompletion resource definition with attributes, 2) Relationship configuration with User and Task, 3) Uniqueness constraint implementation, and 4) Actions and queries for growth task completion. Include specific Ash DSL code for each component."
+    },
+    {
+      "taskId": 6,
+      "taskTitle": "Implement TaskPlayerSetting Resource",
+      "complexityScore": 4,
+      "recommendedSubtasks": 4,
+      "reasoning": "This task is relatively straightforward compared to other resources, involving a simple resource with a uniqueness constraint and basic relationships. The functionality is focused on storing player-specific settings without complex state management.",
+      "expansionPrompt": "Divide the TaskPlayerSetting Resource implementation into subtasks covering: 1) Basic TaskPlayerSetting resource definition, 2) Relationship configuration with User and Task, 3) Uniqueness constraint implementation, and 4) Actions and queries for managing player-specific settings. Include specific Ash DSL code for each component."
+    },
+    {
+      "taskId": 7,
+      "taskTitle": "Implement Authentication UI with Magic Links",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "reasoning": "This task involves implementing a complex authentication flow with LiveView components, email templates, and session management. The magic link authentication adds significant complexity, requiring secure token handling and email delivery.",
+      "expansionPrompt": "Break down the Authentication UI implementation into subtasks covering: 1) Ash Authentication Phoenix configuration, 2) Login LiveView component implementation, 3) Magic link email templates creation, 4) Magic link confirmation controller, and 5) Authentication routes and session management. Include specific LiveView code for each component."
+    },
+    {
+      "taskId": 8,
+      "taskTitle": "Implement Main Player Interface Layout",
+      "complexityScore": 8,
+      "recommendedSubtasks": 7,
+      "reasoning": "This task involves creating a complex UI layout with multiple interactive components, responsive design considerations, and integration with the application's data model. The interface includes player tabs, score displays, category filtering, and a task table structure.",
+      "expansionPrompt": "Divide the Main Player Interface Layout implementation into subtasks covering: 1) Basic layout structure with LiveView, 2) Player name and admin toggle display, 3) Weekly score block implementation, 4) Player tabs with daily scores, 5) Category tabs for filtering, 6) Task table structure, and 7) Responsive design with Tailwind CSS. Include specific LiveView and HTML/CSS code for each component."
+    },
+    {
+      "taskId": 9,
+      "taskTitle": "Implement Task Timer Functionality",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "reasoning": "This task involves complex client-server interaction for real-time timer functionality, state management, and handling of edge cases like page refreshes and network issues. The timer must accurately track time and synchronize with the server.",
+      "expansionPrompt": "Break down the Task Timer Functionality implementation into subtasks covering: 1) Task timer LiveComponent structure, 2) Begin button and timer start functionality, 3) Live timer display with updates, 4) Complete button and time calculation, 5) Timer synchronization with server, and 6) Edge case handling (browser close, network issues). Include specific LiveView and JavaScript code for each component."
+    },
+    {
+      "taskId": 10,
+      "taskTitle": "Implement Task Approval System",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "reasoning": "This task involves implementing role-based functionality for task approval, points calculation, and real-time updates. While not as complex as the timer functionality, it requires careful integration with the DailyTask resource and role-based access control.",
+      "expansionPrompt": "Divide the Task Approval System implementation into subtasks covering: 1) Task approval LiveComponent structure, 2) Admin-only approval button implementation, 3) Approval action with status updates and points awarding, 4) Auto-approval functionality, and 5) Real-time updates for approved tasks. Include specific LiveView code for each component."
+    },
+    {
+      "taskId": 11,
+      "taskTitle": "Implement Admin Mode Toggle and Task Creation",
+      "complexityScore": 7,
+      "recommendedSubtasks": 6,
+      "reasoning": "This task involves implementing role-based UI components, a complex form with validation, and task management functionality. The admin mode toggle affects multiple UI components, and the task creation form has numerous fields with validation requirements.",
+      "expansionPrompt": "Break down the Admin Mode Toggle and Task Creation implementation into subtasks covering: 1) Admin toggle LiveComponent structure, 2) Mode switching functionality with UI updates, 3) Task creation form with fields and validation, 4) Form submission handling, 5) Task editing functionality, and 6) Task deactivation and removal options. Include specific LiveView code for each component."
+    },
+    {
+      "taskId": 12,
+      "taskTitle": "Implement CSV Bulk Upload for Tasks",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "reasoning": "This task involves file upload handling, CSV parsing, validation, and batch processing. While the functionality is well-defined, handling various CSV formats and error cases adds complexity.",
+      "expansionPrompt": "Divide the CSV Bulk Upload implementation into subtasks covering: 1) CSV upload LiveComponent structure, 2) File upload handling with LiveView, 3) CSV parsing and validation logic, 4) Batch task creation from CSV data, and 5) Error handling and reporting. Include specific LiveView code for each component."
+    },
+    {
+      "taskId": 13,
+      "taskTitle": "Implement Real-time Updates with PubSub",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "reasoning": "This task involves integrating Phoenix PubSub for real-time updates across multiple components, requiring careful coordination of broadcasts and subscriptions. The real-time nature adds complexity, especially for handling concurrent updates and reconnection scenarios.",
+      "expansionPrompt": "Break down the Real-time Updates implementation into subtasks covering: 1) PubSub configuration in the application, 2) Topic creation for different update types, 3) Integration with Ash actions for broadcasting, 4) Subscription handling in LiveView components, and 5) Optimistic UI updates. Include specific PubSub and LiveView code for each component."
+    },
+    {
+      "taskId": 14,
+      "taskTitle": "Implement Daily Task Generation with Ash Oban",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "reasoning": "This task involves setting up scheduled jobs with Ash Oban, implementing logic for daily task generation based on day-specific requirements, and handling edge cases. The scheduled nature and potential for failures add complexity.",
+      "expansionPrompt": "Divide the Daily Task Generation implementation into subtasks covering: 1) Ash Oban configuration in the application, 2) Daily task generation job creation, 3) Job scheduling for midnight EST, 4) Task filtering logic based on day of week, and 5) Edge case handling (missed jobs, duplicates). Include specific Oban and Ash code for each component."
+    },
+    {
+      "taskId": 15,
+      "taskTitle": "Implement Weekly Score Reset and Growth Task Interface",
+      "complexityScore": 7,
+      "recommendedSubtasks": 6,
+      "reasoning": "This task combines scheduled job implementation with UI components for growth task selection and completion. The weekly reset job must handle score archiving, while the growth task interface requires complex queries and UI interactions.",
+      "expansionPrompt": "Break down the Weekly Score Reset and Growth Task Interface implementation into subtasks covering: 1) Weekly score reset job creation, 2) Job scheduling for Saturday midnight, 3) Score archiving functionality, 4) Growth task selection interface, 5) One-time selection constraint implementation, and 6) Accomplishments view for completed tasks. Include specific Oban, Ash, and LiveView code for each component."
+    }
+  ]
+}

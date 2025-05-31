@@ -1,0 +1,272 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: Ash TDD workflow and development process that AI must follow
+globs: lib/**/*.ex, test/**/*.ex
+alwaysApply: true
+---
+
+# Ash Development Flow - Resource-First TDD
+
+## Core Philosophy: The Ash Way
+
+- **Resources are the foundation** - Always start with defining Ash resources, not raw schemas
+- **Test-driven development** - Write tests first using Ash patterns, not Ecto
+- **Domain-driven** - Use Ash domains to organize business logic
+- **Action-oriented** - Define explicit actions for all operations
+
+## TDD Flow for Ash Resources
+
+### 1. **Define the Resource First**
+```elixir
+# lib/grizzler/accounts/user.ex
+defmodule Grizzler.Accounts.User do
+  use Ash.Resource,
+    domain: Grizzler.Accounts,
+    data_layer: AshPostgres.DataLayer
+
+  postgres do
+    table "users"
+    repo Grizzler.Repo
+  end
+
+  attributes do
+    uuid_primary_key :id
+    attribute :email, :string, allow_nil?: false
+    attribute :name, :string, allow_nil?: false
+    create_timestamp :inserted_at
+    update_timestamp :updated_at
+  end
+
+  actions do
+    defaults [:read, :destroy]
+    
+    create :create do
+      accept [:email, :name]
+    end
+
+    update :update do
+      accept [:name]
+    end
+  end
+
+  identities do
+    identity :unique_email, [:email]
+  end
+end
+```
+
+### 2. **Write Tests Using Ash Patterns**
+```elixir
+# test/grizzler/accounts_test.exs
+defmodule Grizzler.AccountsTest do
+  use Grizzler.DataCase
+  require Ash.Query
+
+  alias Grizzler.Accounts.User
+
+  describe "user creation" do
+    test "creates user with valid attributes" do
+      assert {:ok, user} = 
+        User
+        |> Ash.Changeset.for_create(:create, %{
+          email: "test@example.com",
+          name: "Test User"
+        })
+        |> Ash.create(domain: Grizzler.Accounts)
+
+      assert user.email == "test@example.com"
+      assert user.name == "Test User"
+    end
+
+    test "validates unique email" do
+      # First user
+      User
+      |> Ash.Changeset.for_create(:create, %{
+        email: "test@example.com", 
+        name: "First User"
+      })
+      |> Ash.create!(domain: Grizzler.Accounts)
+
+      # Duplicate email should fail
+      assert {:error, changeset} = 
+        User
+        |> Ash.Changeset.for_create(:create, %{
+          email: "test@example.com",
+          name: "Second User"
+        })
+        |> Ash.create(domain: Grizzler.Accounts)
+
+      assert changeset.errors != []
+    end
+  end
+
+  describe "user queries" do
+    test "finds users by email" do
+      user = create_user(email: "search@example.com")
+
+      found_user = 
+        User
+        |> Ash.Query.filter(email: "search@example.com")
+        |> Ash.read_one!(domain: Grizzler.Accounts)
+
+      assert found_user.id == user.id
+    end
+  end
+
+  # Helper function using Ash patterns
+  defp create_user(attrs \\ %{}) do
+    defaults = %{email: "test@example.com", name: "Test User"}
+
+    User
+    |> Ash.Changeset.for_create(:create, Map.merge(defaults, attrs))
+    |> Ash.create!(domain: Grizzler.Accounts)
+  end
+end
+```
+
+### 3. **Define the Domain**
+```elixir
+# lib/grizzler/accounts.ex
+defmodule Grizzler.Accounts do
+  use Ash.Domain
+
+  resources do
+    resource Grizzler.Accounts.User
+  end
+end
+```
+
+### 4. **Create Migration (Ash-Generated)**
+```bash
+mix ash_postgres.generate_migrations --name create_users
+mix ecto.migrate
+```
+
+## Advanced Patterns
+
+### Resource with Relationships
+```elixir
+# In User resource
+relationships do
+  has_many :posts, Grizzler.Blog.Post do
+    destination_attribute :user_id
+  end
+end
+
+# Test loading relationships
+test "loads user posts" do
+  user = create_user()
+  post = create_post(user_id: user.id)
+
+  user_with_posts = 
+    User
+    |> Ash.Query.filter(id: ^user.id)
+    |> Ash.Query.load(:posts)
+    |> Ash.read_one!(domain: Grizzler.Accounts)
+
+  assert length(user_with_posts.posts) == 1
+end
+```
+
+### Custom Actions and Calculations
+```elixir
+# In resource
+calculations do
+  calculate :full_name, :string, concat([:first_name, :last_name], " ")
+end
+
+actions do
+  action :deactivate, :update do
+    change set_attribute(:status, :inactive)
+  end
+end
+
+# Test custom actions
+test "deactivates user" do
+  user = create_user()
+
+  {:ok, deactivated_user} = 
+    user
+    |> Ash.Changeset.for_action(:deactivate)
+    |> Ash.update(domain: Grizzler.Accounts)
+
+  assert deactivated_user.status == :inactive
+end
+```
+
+## Common Anti-Patterns to Avoid
+
+### ❌ DON'T: Use raw Ecto
+```elixir
+# Bad - Raw Ecto
+defmodule AccountsTest do
+  test "creates user" do
+    {:ok, user} = %User{email: "test@example.com"} |> Repo.insert()
+  end
+end
+```
+
+### ✅ DO: Use Ash Resources
+```elixir
+# Good - Ash Resources
+defmodule AccountsTest do
+  test "creates user" do
+    {:ok, user} = 
+      User
+      |> Ash.Changeset.for_create(:create, %{email: "test@example.com"})
+      |> Ash.create(domain: Grizzler.Accounts)
+  end
+end
+```
+
+### ❌ DON'T: Direct database queries
+```elixir
+# Bad
+users = Repo.all(User)
+```
+
+### ✅ DO: Ash queries with domain
+```elixir
+# Good
+users = Ash.read!(User, domain: Grizzler.Accounts)
+```
+
+## Development Checklist
+
+Before implementing any feature:
+
+- [ ] Resource defined with proper attributes and actions
+- [ ] Domain configured with resource
+- [ ] Tests written using Ash patterns (`require Ash.Query`)
+- [ ] Helper functions use `Ash.Changeset.for_create/3`
+- [ ] All queries specify domain parameter
+- [ ] Migrations generated with `mix ash_postgres.generate_migrations`
+
+## Quick Reference Commands
+
+```bash
+# Generate new resource
+mix ash.gen.resource Accounts User
+
+# Generate migrations
+mix ash_postgres.generate_migrations --name add_feature
+
+# Run migrations
+mix ecto.migrate
+
+# Generate domain
+mix ash.gen.domain Accounts
+```
+
+## Resource References
+
+- [ash_patterns.mdc](mdc:.cursor/rules/ash_patterns.mdc) - Essential Ash patterns
+- [ash.md](mdc:.cursor/resources/ash.md) - Complete Ash reference  
+- [ash_patterns_and_lessons.md](mdc:.cursor/resources/ash_patterns_and_lessons.md) - Project-specific patterns
+- [testing_tdd.md](mdc:.cursor/resources/testing_tdd.md) - TDD patterns
+
+**Remember**: Always start with the resource, write tests using Ash patterns, and avoid raw Ecto operations. This ensures you're following "The Ash Way" from the beginning.

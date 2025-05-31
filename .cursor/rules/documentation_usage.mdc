@@ -1,0 +1,78 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: Guide for using version-matched documentation and official resources
+globs: lib/**/*.ex, test/**/*.ex
+alwaysApply: true
+---
+
+# Documentation Usage Guidelines
+
+## Project Versions (from mix.exs)
+- **Elixir**: ~> 1.14  
+- **Phoenix**: ~> 1.7.21
+- **Ash**: ~> 3.0
+- **Ash Phoenix**: ~> 2.0
+- **Ash Postgres**: ~> 2.0
+- **Ash Authentication**: ~> 4.0
+
+## Documentation Hierarchy
+
+### 1. **Project Resources** (First Priority)
+Always check these project-specific resources first:
+- [Ash Cheatsheet](mdc:.cursor/resources/cheatsheet.md) - Version-matched Ash patterns
+- [Ash Patterns & Lessons](mdc:.cursor/resources/ash_patterns_and_lessons.md) - Project-specific examples
+- [Testing TDD](mdc:.cursor/resources/testing_tdd.md) - TDD approach for this project
+
+### 2. **Official Documentation** (Version-Matched)
+- **Ash 3.x**: https://hexdocs.pm/ash/3.0.0/
+- **Phoenix 1.7.x**: https://hexdocs.pm/phoenix/1.7.21/
+- **Ash Phoenix 2.x**: https://hexdocs.pm/ash_phoenix/2.0.0/
+- **Ash Postgres 2.x**: https://hexdocs.pm/ash_postgres/2.0.0/
+
+### 3. **Official Guides** (Current)
+- **Ash Guide**: https://ash-hq.org/docs/guides/ash/latest/get-started
+- **Phoenix Guide**: https://hexdocs.pm/phoenix/overview.html
+
+## Usage Rules
+
+### ✅ DO:
+- Reference project resources first before external docs
+- Cross-reference with cheatsheet for canonical patterns  
+- Verify examples work with current project versions
+- Check [ash_patterns_and_lessons.md](mdc:.cursor/resources/ash_patterns_and_lessons.md) for project-tested patterns
+
+### ❌ DON'T:
+- Use outdated Ash 2.x patterns or documentation
+- Reference deprecated Phoenix 1.6 patterns
+- Use examples without version verification
+- Ignore project-specific patterns in favor of generic examples
+
+## Documentation Search Strategy
+
+1. **Start with project resources** - Check `.cursor/resources/` files
+2. **Verify version compatibility** - Ensure examples match mix.exs versions  
+3. **Use official docs** - But prioritize version-matched content
+4. **Test before implementing** - Especially with new patterns
+
+## Common Documentation Pitfalls
+
+- **Ash DSL changes**: Ash 3.x has different syntax than 2.x
+- **Phoenix LiveView**: Ensure 1.0+ patterns, not 0.x
+- **Authentication flows**: Use Ash Authentication 4.x patterns
+- **Query syntax**: Ash.Query patterns have evolved
+
+## When Documentation Conflicts
+
+**Priority Order:**
+1. Project-specific patterns (`.cursor/resources/`)
+2. Official version-matched docs
+3. Community examples (with version verification)
+4. Generic tutorials (last resort, verify compatibility)
+
+---
+
+**Remember**: When in doubt, check the project's cheatsheet and patterns files first. They contain version-matched, project-tested examples that are guaranteed to work.
