@@ -296,24 +296,174 @@ end
 
 ## Testing with Test Data
 
-### Using Ash.Seed.seed! for Fast Setup
+Ash provides two primary approaches for creating test data, each serving different purposes:
 
+### Understanding Ash.Seed.seed! vs Ash.Generator
+
+#### Ash.Seed.seed! - Database Seeding for Application Data
+
+`Ash.Seed.seed!` is designed for **populating your database** with initial, persistent data that your application needs to function properly.
+
+**Purpose:**
+- Set up initial application data (admin users, default categories, system records)
+- Populate development and staging environments with baseline data
+- Create consistent, known data across environments
+- Establish foundation data your application depends on
+
+**Characteristics:**
+- Creates **real records** in your database
+- Data **persists** between application runs
+- Usually run once per environment setup
+- Creates **specific, known data** your app depends on
+- Bypasses policies and business logic for fast setup
+
+**Example Usage:**
 ```elixir
-# For simple test data where business logic isn't important
-user = Ash.Seed.seed!(User, %{email: "test@example.com"})
+# In priv/repo/seeds.exs or seed scripts
+defmodule MyApp.Seeds do
+  def run do
+    # Create admin user that always exists
+    Ash.Seed.seed!(MyApp.Accounts.User, %{
+      email: "admin@myapp.com",
+      role: "admin",
+      name: "System Admin"
+    })
+    
+    # Create default categories your app expects
+    ["Technology", "Sports", "News"]
+    |> Enum.each(fn name ->
+      Ash.Seed.seed!(MyApp.Blog.Category, %{
+        name: name, 
+        slug: String.downcase(name)
+      })
+    end)
+  end
+end
+
+# In test helpers for fast test data setup
+def create_user(attrs \\ %{}) do
+  defaults = %{email: "user#{System.unique_integer()}@test.com"}
+  attrs = Map.merge(defaults, attrs)
+  Ash.Seed.seed!(MyApp.Accounts.User, attrs)
+end
 ```
 
-### Creating Test Data Through Actions
+#### Ash.Generator - Test Data Generation for Comprehensive Testing
+
+`Ash.Generator` is designed for **generating varied test data** that gets created and destroyed during testing to exercise your application's behavior comprehensively.
+
+**Purpose:**
+- Create varied, randomized test data for thorough testing
+- Generate data that follows your schema rules and constraints
+- Support property-based testing with many different examples
+- Test edge cases and validation scenarios
+
+**Characteristics:**
+- Creates **temporary data** for individual tests
+- Data is **cleaned up** after tests complete
+- Generates **random/varied data** each test run
+- Used for testing edge cases, validations, and business logic
+- Respects resource constraints and generates realistic data
+
+**Example Usage:**
+```elixir
+# Property-based testing with varied data
+defmodule MyApp.UserTest do
+  use ExUnit.Case
+  use StreamData
+
+  test "user creation with random valid data" do
+    # Generates different data each time the test runs
+    user_generator = Ash.Generator.for(MyApp.Accounts.User, %{
+      email: StreamData.string(:alphanumeric, min_length: 5) 
+             |> StreamData.map(&(&1 <> "@test.com")),
+      role: StreamData.member_of(["user", "moderator", "admin"]),
+      name: StreamData.string(:alphanumeric, min_length: 2)
+    })
+    
+    check all user_attrs <- user_generator do
+      assert {:ok, user} = MyApp.Accounts.create_user(user_attrs)
+      assert user.email =~ "@test.com"
+      assert user.role in ["user", "moderator", "admin"]
+    end
+  end
+end
+```
+
+### Key Differences Summary
+
+| Aspect               | Ash.Seed.seed!                        | Ash.Generator                       |
+| -------------------- | ------------------------------------- | ----------------------------------- |
+| **Purpose**          | Database seeding & fast test setup    | Property-based test data generation |
+| **When used**        | App setup/deployment & test helpers   | During comprehensive testing        |
+| **Data persistence** | Permanent (seeds) / Temporary (tests) | Temporary                           |
+| **Data variety**     | Fixed, specific                       | Random, varied                      |
+| **Environment**      | Dev/staging/prod/test                 | Test only                           |
+| **Business logic**   | Bypassed for speed                    | Can respect or bypass               |
+| **Use case**         | Foundation data & simple test setup   | Edge case testing & validation      |
+
+### Practical Usage Guidelines
+
+#### Use Ash.Seed.seed! when:
+- Setting up application foundation data (admin users, categories)
+- Creating fast test data where business logic validation isn't needed
+- You need the same specific data every time
+- Performance is critical (test setup)
+
+#### Use Ash.Generator when:
+- Testing with varied, realistic data
+- Property-based testing scenarios
+- You want to test edge cases and validation rules
+- Testing how your application handles different input combinations
+
+### Real-world Implementation Example
 
 ```elixir
-# For testing business logic and validations
-defp create_user(attrs \\ %{}) do
-  defaults = %{email: "user#{System.unique_integer()}@example.com"}
-  params = Map.merge(defaults, attrs)
+# Seeds - Run once to set up your application
+defmodule MyApp.Seeds do
+  def run do
+    # This admin always exists - foundation data
+    Ash.Seed.seed!(MyApp.Accounts.User, %{
+      email: "admin@myapp.com",
+      role: "admin",
+      name: "System Administrator"
+    })
+    
+    # Default categories your app expects
+    Ash.Seed.seed!(MyApp.Blog.Category, %{name: "General", default: true})
+  end
+end
+
+# Test helpers - Fast setup for most tests
+defmodule MyApp.TestHelpers do
+  def create_user(attrs \\ %{}) do
+    defaults = %{email: "user#{System.unique_integer()}@test.com"}
+    attrs = Map.merge(defaults, attrs)
+    Ash.Seed.seed!(MyApp.Accounts.User, attrs)
+  end
+end
+
+# Property-based tests - Comprehensive validation testing
+defmodule MyApp.UserValidationTest do
+  test "users are created with valid emails across many examples" do
+    user_generator = Ash.Generator.for(MyApp.Accounts.User)
+    
+    check all user_attrs <- user_generator do
+      case MyApp.Accounts.create_user(user_attrs) do
+        {:ok, user} -> 
+          assert String.contains?(user.email, "@")
+        {:error, changeset} ->
+          # Verify validation errors are appropriate
+          assert changeset.errors != []
+      end
+    end
+  end
   
-  User
-  |> Ash.Changeset.for_create(:create, params)
-  |> Ash.create!(domain: MyApp.Accounts)
+  test "can find the seeded admin user" do
+    # This relies on the seeded foundation data existing
+    admin = MyApp.Accounts.get_user_by_email!("admin@myapp.com")
+    assert admin.role == "admin"
+  end
 end
 ```
 

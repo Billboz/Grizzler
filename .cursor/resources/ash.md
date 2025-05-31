@@ -7,6 +7,7 @@
   - [Understanding Ash](#understanding-ash)
   - [Code Structure \& Organization](#code-structure--organization)
   - [Code Interfaces](#code-interfaces)
+    - [Authorization Functions](#authorization-functions)
   - [Actions](#actions)
   - [Anonymous Functions](#anonymous-functions)
     - [Action Types](#action-types)
@@ -44,7 +45,35 @@
     - [Using Aggregates](#using-aggregates)
     - [Join Filters](#join-filters)
     - [Inline Aggregates](#inline-aggregates)
+  - [Error Handling](#error-handling)
+  - [Validations](#validations)
+    - [Using Built-in Validations](#using-built-in-validations)
+    - [Custom Error Messages](#custom-error-messages)
+    - [Conditional Validations](#conditional-validations)
+    - [Action-Specific Validations](#action-specific-validations)
+    - [Global Validations](#global-validations)
+    - [Custom Validation Modules](#custom-validation-modules)
+    - [Atomic Validations](#atomic-validations)
+    - [Best Practices for Validations](#best-practices-for-validations)
+  - [API Key Authentication](#api-key-authentication)
+    - [Setting Up API Key Authentication](#setting-up-api-key-authentication)
+      - [1. Create API Key Resource](#1-create-api-key-resource)
+      - [2. Add Strategy to User Resource](#2-add-strategy-to-user-resource)
+    - [Security Considerations](#security-considerations)
+      - [API Key Hashing](#api-key-hashing)
+      - [Metadata Access](#metadata-access)
+      - [Policy Controls](#policy-controls)
+      - [Expiration Management](#expiration-management)
+    - [Using API Keys](#using-api-keys)
+      - [In Phoenix Controllers](#in-phoenix-controllers)
+      - [Authentication Plug](#authentication-plug)
+    - [Best Practices](#best-practices)
   - [Testing](#testing)
+    - [Testing Approaches](#testing-approaches)
+      - [Use Ash.Seed.seed! for Fast Test Setup](#use-ashseedseed-for-fast-test-setup)
+      - [Use Ash.Generator for Property-Based Testing](#use-ashgenerator-for-property-based-testing)
+      - [Use Actions for Business Logic Testing](#use-actions-for-business-logic-testing)
+    - [Quick Reference](#quick-reference)
   - [Related Documentation](#related-documentation)
 
 ---
@@ -88,6 +117,33 @@ define :custom_action do
   end
 end
 ```
+
+### Authorization Functions
+
+For each action defined in a code interface, Ash automatically generates corresponding authorization check functions:
+
+- `can_action_name?(actor, params \\ %{}, opts \\ [])` - Returns `true`/`false` for authorization checks
+- `can_action_name(actor, params \\ %{}, opts \\ [])` - Returns `{:ok, true/false}` or `{:error, reason}`
+
+Example usage:
+```elixir
+# Check if user can create a post
+if MyApp.Blog.can_create_post?(current_user) do
+  # Show create button
+end
+
+# Check if user can update a specific post
+if MyApp.Blog.can_update_post?(current_user, post) do
+  # Show edit button
+end
+
+# Check if user can destroy a specific comment
+if MyApp.Blog.can_destroy_comment?(current_user, comment) do
+  # Show delete button
+end
+```
+
+These functions are particularly useful for conditional rendering of UI elements based on user permissions.
 
 ## Actions
 
@@ -774,13 +830,421 @@ calculate :grade_percentage, :decimal, expr(
 )
 ```
 
+## Error Handling
+
+Functions to call actions, like `Ash.create` and code interfaces like `MyApp.Accounts.register_user` all return ok/error tuples. All have `!` variations, like `Ash.create!` and `MyApp.Accounts.register_user!`. Use the `!` variations when you want to "let it crash", like if looking something up that should definitely exist, or calling an action that should always succeed. Always prefer the raising `!` variation over something like `{:ok, user} = MyApp.Accounts.register_user(...)`.
+
+All Ash code returns errors in the form of `{:error, error_class}`. Ash categorizes errors into four main classes:
+
+1. **Forbidden** (`Ash.Error.Forbidden`) - Occurs when a user attempts an action they don't have permission to perform
+2. **Invalid** (`Ash.Error.Invalid`) - Occurs when input data doesn't meet validation requirements
+3. **Framework** (`Ash.Error.Framework`) - Occurs when there's an issue with how Ash is being used
+4. **Unknown** (`Ash.Error.Unknown`) - Occurs for unexpected errors that don't fit the other categories
+
+These error classes help you catch and handle errors at an appropriate level of granularity. An error class will always be the "worst" (highest in the above list) error class from above. Each error class can contain multiple underlying errors, accessible via the `errors` field on the exception.
+
+## Validations
+
+Validations ensure that data meets your business requirements before it gets processed by an action. Unlike changes, validations cannot modify the changeset - they can only validate it or add errors.
+
+### Using Built-in Validations
+
+Use **built-in validations** (defined in `Ash.Resource.Validation.Builtins`) for common validation patterns:
+
+```elixir
+validations do
+  validate match(:email, "@")
+  validate compare(:age, greater_than_or_equal_to: 18)
+  validate present(:first_name)
+  validate one_of(:status, [:active, :inactive, :pending])
+end
+```
+
+### Custom Error Messages
+
+Add **custom error messages** to make validation errors user-friendly:
+
+```elixir
+validations do
+  validate compare(:age, greater_than_or_equal_to: 18) do
+    message "You must be at least 18 years old to sign up"
+  end
+end
+```
+
+### Conditional Validations
+
+Apply validations **conditionally** using `where`:
+
+```elixir
+validations do
+  validate present(:phone_number) do
+    where present(:contact_method)
+    where eq(:contact_method, "phone")
+    message "Phone number is required when phone is selected as contact method"
+  end
+end
+```
+
+### Action-Specific Validations
+
+Create **action-specific validations** inside your action definitions:
+
+```elixir
+actions do
+  create :sign_up do
+    validate present([:email, :password])
+    validate match(:email, "@")
+  end
+end
+```
+
+### Global Validations
+
+Add **global validations** that apply to multiple action types:
+
+```elixir
+validations do
+  validate present([:title, :body]), on: [:create, :update]
+  validate absent(:admin_note), on: :create, where: not_actor_attribute(:is_admin, true)
+end
+```
+
+### Custom Validation Modules
+
+Create **custom validation modules** for complex validation logic:
+
+```elixir
+defmodule MyApp.Validations.UniqueUsername do
+  use Ash.Resource.Validation
+
+  @impl true
+  def init(opts), do: {:ok, opts}
+
+  @impl true
+  def validate(changeset, _opts, _context) do
+    # Validation logic here
+    # Return :ok or {:error, message}
+  end
+end
+
+# Usage in resource:
+validations do
+  validate {MyApp.Validations.UniqueUsername, []}
+end
+```
+
+### Atomic Validations
+
+Make validations **atomic** when possible to ensure they work correctly with direct database operations by implementing the `atomic/3` callback in custom validation modules:
+
+```elixir
+defmodule MyApp.Validations.IsEven do
+  use Ash.Resource.Validation
+
+  @impl true
+  def init(opts) do
+    if is_atom(opts[:attribute]) do
+      {:ok, opts}
+    else
+      {:error, "attribute must be an atom!"}
+    end
+  end
+
+  @impl true
+  def validate(changeset, opts, _context) do
+    value = Ash.Changeset.get_attribute(changeset, opts[:attribute])
+
+    if is_nil(value) || (is_number(value) && rem(value, 2) == 0) do
+      :ok
+    else
+      {:error, field: opts[:attribute], message: "must be an even number"}
+    end
+  end
+
+  @impl true
+  def atomic(changeset, opts, context) do
+    {:atomic,
+      # the list of attributes that are involved in the validation
+      [opts[:attribute]],
+      # the condition that should cause the error
+      expr(rem(^atomic_ref(opts[:attribute]), 2) != 0),
+      # the error expression
+      expr(
+        error(^InvalidAttribute, %{
+          field: ^opts[:attribute],
+          value: ^atomic_ref(opts[:attribute]),
+          message: ^(context.message || "%{field} must be an even number"),
+          vars: %{field: ^opts[:attribute]}
+        })
+      )
+    }
+  end
+end
+```
+
+### Best Practices for Validations
+
+- **Avoid redundant validations** - Don't add validations that duplicate attribute constraints:
+
+```elixir
+# CORRECT - let attribute constraints handle basic validation
+attribute :name, :string do
+  allow_nil? false
+  constraints min_length: 1
+end
+```
+
+## API Key Authentication
+
+API Key authentication provides a secure way to authenticate API requests using generated tokens. This pattern is particularly useful for service-to-service communication and programmatic access.
+
+### Setting Up API Key Authentication
+
+#### 1. Create API Key Resource
+
+First, create a dedicated resource to manage API keys:
+
+```elixir
+defmodule MyApp.Accounts.ApiKey do
+  use Ash.Resource,
+    data_layer: AshPostgres.DataLayer,
+    authorizers: [Ash.Policy.Authorizer]
+
+  actions do
+    defaults [:read, :destroy]
+
+    create :create do
+      primary? true
+      accept [:user_id, :expires_at]
+      change {AshAuthentication.Strategy.ApiKey.GenerateApiKey, prefix: :myapp, hash: :api_key_hash}
+    end
+  end
+
+  attributes do
+    uuid_primary_key :id
+    attribute :api_key_hash, :binary, allow_nil?: false, sensitive?: true
+    attribute :expires_at, :utc_datetime_usec, allow_nil?: false
+  end
+
+  relationships do
+    belongs_to :user, MyApp.Accounts.User, allow_nil?: false
+  end
+
+  calculations do
+    calculate :valid, :boolean, expr(expires_at > now())
+  end
+
+  identities do
+    identity :unique_api_key, [:api_key_hash]
+  end
+
+  policies do
+    bypass AshAuthentication.Checks.AshAuthenticationInteraction do
+      authorize_if always()
+    end
+  end
+
+  postgres do
+    table "api_keys"
+    repo MyApp.Repo
+  end
+end
+```
+
+#### 2. Add Strategy to User Resource
+
+Configure the API key strategy in your user resource:
+
+```elixir
+defmodule MyApp.Accounts.User do
+  use Ash.Resource,
+    data_layer: AshPostgres.DataLayer,
+    extensions: [AshAuthentication],
+    authorizers: [Ash.Policy.Authorizer]
+
+  authentication do
+    strategies do
+      api_key do
+        api_key_relationship :valid_api_keys
+        api_key_hash_attribute :api_key_hash
+      end
+    end
+  end
+
+  relationships do
+    has_many :valid_api_keys, MyApp.Accounts.ApiKey do
+      filter expr(valid)
+    end
+  end
+
+  actions do
+    defaults [:read, :create, :update, :destroy]
+
+    read :sign_in_with_api_key do
+      argument :api_key, :string, allow_nil?: false
+      prepare AshAuthentication.Strategy.ApiKey.SignInPreparation
+    end
+  end
+
+  # ... rest of user resource
+end
+```
+
+### Security Considerations
+
+#### API Key Hashing
+
+- API keys are automatically hashed for storage security using the `GenerateApiKey` change
+- Only the hash is stored in the database, never the plain text key
+- Use prefixes (e.g., `myapp_`) to enable secret scanning compliance
+
+#### Metadata Access
+
+Check authentication method and access the API key in your application:
+
+```elixir
+# Detect API key authentication
+if user.__metadata__[:using_api_key?] do
+  # Handle API key specific logic
+end
+
+# Access the API key for permission checks
+api_key = user.__metadata__[:api_key]
+```
+
+#### Policy Controls
+
+Use policies to restrict API key access to specific actions:
+
+```elixir
+policies do
+  # Only allow API key authentication for specific actions
+  policy action_type(:read) do
+    authorize_if always()
+  end
+
+  policy action_type([:create, :update, :destroy]) do
+    forbid_if actor_attribute_equals(:__metadata__[:using_api_key?], true)
+    authorize_if actor_attribute_equals(:admin?, true)
+  end
+end
+```
+
+#### Expiration Management
+
+Always set expiration dates on API keys:
+
+```elixir
+# Create API key with 30-day expiration
+MyApp.Accounts.create_api_key!(%{
+  user_id: user.id,
+  expires_at: DateTime.add(DateTime.utc_now(), 30, :day)
+})
+```
+
+### Using API Keys
+
+#### In Phoenix Controllers
+
+```elixir
+defmodule MyAppWeb.ApiController do
+  use MyAppWeb, :controller
+
+  def index(conn, _params) do
+    case AshAuthentication.subject_to_user(
+      conn.assigns[:current_user_subject],
+      MyApp.Accounts.User
+    ) do
+      {:ok, user} ->
+        # User authenticated via API key or other method
+        json(conn, %{data: "success", user_id: user.id})
+
+      {:error, _} ->
+        conn
+        |> put_status(:unauthorized)
+        |> json(%{error: "Invalid authentication"})
+    end
+  end
+end
+```
+
+#### Authentication Plug
+
+```elixir
+# In your Phoenix pipeline
+pipeline :api_authenticated do
+  plug AshAuthentication.Plug,
+    resource: MyApp.Accounts.User,
+    action: :sign_in_with_api_key,
+    strategies: [:api_key]
+end
+```
+
+### Best Practices
+
+1. **Use descriptive prefixes** for compliance with secret scanning tools
+2. **Set reasonable expiration dates** to limit exposure risk
+3. **Implement rate limiting** on API key endpoints
+4. **Log API key usage** for security monitoring
+5. **Rotate keys regularly** in production environments
+6. **Use HTTPS only** when transmitting API keys
+7. **Store API keys securely** on the client side
+
 ## Testing
 
-When testing resources:
+When testing Ash resources, you have different tools available depending on your testing needs:
+
+### Testing Approaches
+
+**For Unit/Integration Tests:**
 - Test your domain actions through the code interface
 - Test authorization policies work as expected using `Ash.can?`
 - Use `authorize?: false` in tests where authorization is not the focus
-- Write generators using `Ash.Generator`
+
+**For Data Creation in Tests:**
+
+#### Use Ash.Seed.seed! for Fast Test Setup
+```elixir
+# Fast test data creation - bypasses business logic
+user = Ash.Seed.seed!(MyApp.Accounts.User, %{email: "test@example.com"})
+```
+- Best for: Test helpers, performance-critical test setup
+- Characteristics: Fast, bypasses policies/validations, creates specific data
+
+#### Use Ash.Generator for Property-Based Testing
+```elixir
+# Property-based testing with varied, realistic data
+user_generator = Ash.Generator.for(MyApp.Accounts.User, %{
+  email: StreamData.string(:alphanumeric, min_length: 5) 
+         |> StreamData.map(&(&1 <> "@test.com"))
+})
+
+check all user_attrs <- user_generator do
+  assert {:ok, user} = MyApp.Accounts.create_user(user_attrs)
+end
+```
+- Best for: Edge case testing, validation testing, comprehensive test coverage
+- Characteristics: Generates varied data, respects constraints, good for finding edge cases
+
+#### Use Actions for Business Logic Testing
+```elixir
+# Test business logic and validations
+{:ok, user} = 
+  MyApp.Accounts.User
+  |> Ash.Changeset.for_create(:create, %{email: "test@example.com"})
+  |> Ash.create(domain: MyApp.Accounts)
+```
+- Best for: Testing actual business logic, validations, side effects
+- Characteristics: Runs through full business logic, tests real application behavior
+
+### Quick Reference
+
+| Tool             | Purpose                | Performance | Business Logic   | Use When                       |
+| ---------------- | ---------------------- | ----------- | ---------------- | ------------------------------ |
+| `Ash.Seed.seed!` | Fast test setup        | ⚡ Fast      | ❌ Bypassed       | Test helpers, quick setup      |
+| `Ash.Generator`  | Property testing       | 🐌 Slower    | ✅ Respected      | Edge cases, validation testing |
+| Actions          | Business logic testing | 🔄 Normal    | ✅ Full execution | Testing real app behavior      |
 
 ---
 
@@ -790,4 +1254,4 @@ When testing resources:
 - [Ash PostgreSQL](ash_postgres.md) - PostgreSQL data layer 
 - [Authorization & Policies](authorization_policies.md) - Detailed authorization patterns
 - [Testing & TDD](testing_tdd.md) - Testing strategies for Ash resources
-- [Index](index.md) - Complete documentation index 
+- [Index](index.md) - Complete documentation index

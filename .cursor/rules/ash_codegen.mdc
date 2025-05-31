@@ -3,3 +3,192 @@ description:
 globs:
 alwaysApply: false
 ---
+# Ash Code Generation Best Practices
+
+**Always use Ash generators instead of manually creating resources, domains, or migrations.**
+
+## Core Principles
+
+- **Start with `mix ash.gen.resource`** for new resources
+- **Use `mix ash.codegen`** to generate migrations automatically  
+- **Let Ash handle domain configuration** automatically
+- **Generate tests alongside resources** when possible
+
+## Development Migration Workflow
+
+For iterative development, use the **dev workflow** to avoid naming migrations prematurely:
+
+### Development Iterations (Recommended)
+
+```bash
+# 1. Make resource changes in your code
+# 2. Generate dev migrations 
+mix ash.codegen --dev
+
+# 3. Review and apply migrations
+mix ash.migrate
+
+# 4. Continue iterating - repeat steps 1-3 as needed
+# 5. When feature complete, squash into named migration
+mix ash.codegen add_blog_system  # Squashes dev migrations
+```
+
+### Traditional Workflow (Single Changes)
+
+```bash
+# For single-step changes or when you know the final name
+mix ash.codegen add_feature_name
+mix ash.migrate
+```
+
+### Key Benefits of Dev Workflow
+
+- **No premature naming**: Don't think about migration names during development
+- **Better ergonomics**: Focus on iterating on your domain design
+- **Cleaner history**: Final migrations are well-named and focused
+- **Safer development**: Each iteration is independently reviewable
+
+### Migration Review Process
+
+**Always review migrations before applying:**
+
+```bash
+# Review generated migrations in priv/repo/migrations/
+cat priv/repo/migrations/[timestamp]_*.exs
+
+# Apply after review
+mix ash.migrate
+```
+
+**Warning**: Always verify migrations are safe, especially:
+- Column drops or renames
+- Index changes on large tables  
+- Data transformations
+
+## Resource Generation Workflow
+
+### 1. Generate Resource with Full Specification
+
+```bash
+# Single command creates resource, domain, and relationships
+mix ash.gen.resource MyApp.Blog.Post \
+  --domain MyApp.Blog \
+  --attribute title:string:required:public \
+  --attribute content:string:required:public \
+  --relationship belongs_to:user:MyApp.Accounts.User:required \
+  --default-actions create,read,update,destroy \
+  --uuid-primary-key id \
+  --timestamps \
+  --extend postgres
+```
+
+**This generates:**
+- Resource module with proper Ash patterns
+- Domain module (if it doesn't exist)
+- Adds resource to domain configuration
+- Updates app configuration automatically
+- Sets up relationships correctly
+
+### 2. Generate Migrations Automatically
+
+```bash
+# After resource changes, always use Ash codegen
+mix ash.codegen  # Generates migrations and snapshots
+mix ecto.migrate
+```
+
+**Never manually create migrations for Ash resources** - always use `mix ash.codegen`.
+
+### 3. Add Extensions and Relationships Later
+
+```bash
+# Add extensions to existing resources
+mix ash.extend MyApp.Blog.Post --extend json_api,graphql
+
+# Generate additional resources with relationships
+mix ash.gen.resource MyApp.Blog.Comment \
+  --domain MyApp.Blog \
+  --relationship belongs_to:post:MyApp.Blog.Post:required \
+  --relationship belongs_to:user:MyApp.Accounts.User:required
+```
+
+## Resource Generation Options Reference
+
+### Attributes
+- `--attribute name:type:modifiers`
+- **Modifiers:** `required`, `public`, `sensitive`, `primary_key`
+- **Example:** `--attribute email:ci_string:required:public`
+
+### Relationships  
+- `--relationship type:name:destination:modifiers`
+- **Types:** `belongs_to`, `has_many`, `has_one`, `many_to_many`
+- **Modifiers:** `public`, `required`, `sensitive`
+- **Example:** `--relationship belongs_to:user:MyApp.Accounts.User:required`
+
+### Actions
+- `--default-actions create,read,update,destroy`
+- **Individual actions are customizable after generation**
+
+### Primary Keys
+- `--uuid-primary-key id` (UUID v4)
+- `--uuid-v7-primary-key id` (UUID v7) 
+- `--integer-primary-key id`
+
+### Extensions
+- `--extend postgres,json_api,graphql`
+- **Common extensions:** `postgres`, `json_api`, `graphql`, `admin`
+
+## Anti-Patterns to Avoid
+
+❌ **Manual Resource Creation**
+```elixir
+# Don't manually create resource files
+defmodule MyApp.Blog.Post do
+  use Ash.Resource
+  # ... manually writing everything
+end
+```
+
+❌ **Manual Domain Configuration**
+```elixir
+# Don't manually add to config
+config :my_app, ash_domains: [MyApp.Blog]  # Ash does this
+```
+
+❌ **Manual Migration Creation**
+```bash
+# Don't use raw Ecto migrations for Ash resources
+mix ecto.gen.migration create_posts  # Wrong for Ash
+```
+
+✅ **Correct Approach**
+```bash
+# Use Ash generators
+mix ash.gen.resource MyApp.Blog.Post --domain MyApp.Blog
+mix ash.codegen
+mix ecto.migrate
+```
+
+## Time Savings Comparison
+
+| Approach | Time | Errors | Idiomatic |
+|----------|------|--------|-----------|
+| Manual Creation | 30-45 min | High | ❌ |
+| Ash Codegen | 5-8 min | Low | ✅ |
+
+## Integration with Development Workflow
+
+1. **Plan the resource** (attributes, relationships, actions)
+2. **Run `mix ash.gen.resource`** with full specification
+3. **Run `mix ash.codegen`** to generate migrations
+4. **Run tests** to validate
+5. **Iterate** with additional generators as needed
+
+## References
+
+- [Ash Generators Documentation](https://hexdocs.pm/ash/generators.html)
+- [Ash.Resource DSL](https://hexdocs.pm/ash/dsl-ash-resource.html)
+- [dev_workflow.mdc](mdc:.cursor/rules/dev_workflow.mdc) for overall workflow
+- [ash_patterns_and_lessons.md](mdc:.cursor/resources/ash_patterns_and_lessons.md) for resource patterns
+
+**Remember: Ash generators create idiomatic, maintainable code patterns that follow framework conventions.**

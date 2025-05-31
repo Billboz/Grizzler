@@ -12,6 +12,7 @@
   - [Adding and Removing Nested Forms](#adding-and-removing-nested-forms)
 - [Union Forms](#union-forms)
 - [Error Handling](#error-handling)
+- [Advanced Form Patterns](#advanced-form-patterns)
 - [Best Practices](#best-practices)
 
 ---
@@ -224,6 +225,166 @@ def handle_event("submit", %{"form" => params}, socket) do
       {:noreply, assign(socket, form: form)}
   end
 end
+```
+
+## Advanced Form Patterns
+
+### Form with Auto-Submit Validation
+
+For real-time validation during user input:
+
+```elixir
+def mount(_params, _session, socket) do
+  form = AshPhoenix.Form.for_create(MyApp.Accounts.User, :create)
+  {:ok, assign(socket, form: form, check_errors: false)}
+end
+
+def handle_event("validate", %{"form" => params}, socket) do
+  form = AshPhoenix.Form.validate(socket.assigns.form, params, errors: socket.assigns.check_errors)
+  {:noreply, assign(socket, form: form, check_errors: true)}
+end
+```
+
+### Forms with Complex Conditional Logic
+
+For forms that show/hide fields based on user input:
+
+```heex
+<.simple_form for={@form} phx-change="validate" phx-submit="submit">
+  <.input field={@form[:account_type]} type="select" options={["personal", "business"]} />
+
+  <%= if @form.params["account_type"] == "business" do %>
+    <.input field={@form[:company_name]} placeholder="Company Name" />
+    <.input field={@form[:tax_id]} placeholder="Tax ID" />
+  <% end %>
+
+  <%= if @form.params["account_type"] == "personal" do %>
+    <.input field={@form[:first_name]} placeholder="First Name" />
+    <.input field={@form[:last_name]} placeholder="Last Name" />
+  <% end %>
+</.simple_form>
+```
+
+### Multi-Step Forms with State Management
+
+For complex wizards that need to maintain state across steps:
+
+```elixir
+def mount(_params, _session, socket) do
+  form = AshPhoenix.Form.for_create(MyApp.Accounts.User, :create)
+  
+  socket = 
+    socket
+    |> assign(form: form, current_step: 1, completed_steps: MapSet.new())
+    
+  {:ok, socket}
+end
+
+def handle_event("next-step", %{"form" => params}, socket) do
+  form = AshPhoenix.Form.validate(socket.assigns.form, params, errors: true)
+  
+  if form.valid? do
+    socket =
+      socket
+      |> assign(form: form, current_step: socket.assigns.current_step + 1)
+      |> update(:completed_steps, &MapSet.put(&1, socket.assigns.current_step))
+      
+    {:noreply, socket}
+  else
+    {:noreply, assign(socket, form: form)}
+  end
+end
+
+def handle_event("prev-step", _params, socket) do
+  socket = assign(socket, current_step: max(1, socket.assigns.current_step - 1))
+  {:noreply, socket}
+end
+```
+
+### Form Error Recovery Patterns
+
+For graceful handling of submission errors:
+
+```elixir
+def handle_event("submit", %{"form" => params}, socket) do
+  case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
+    {:ok, result} ->
+      socket =
+        socket
+        |> put_flash(:info, "Successfully created!")
+        |> push_navigate(to: success_path(result))
+        
+      {:noreply, socket}
+
+    {:error, %AshPhoenix.Form{} = form} ->
+      # Handle validation errors
+      {:noreply, assign(socket, form: form)}
+
+    {:error, error} ->
+      # Handle unexpected errors
+      socket =
+        socket
+        |> put_flash(:error, "An unexpected error occurred. Please try again.")
+        |> assign(form: AshPhoenix.Form.clear_value(socket.assigns.form))
+        
+      {:noreply, socket}
+  end
+end
+```
+
+### Custom Form Field Components
+
+Create reusable form components for complex inputs:
+
+```elixir
+defmodule MyAppWeb.FormComponents do
+  use Phoenix.Component
+  import AshPhoenix.Form
+  
+  attr :field, Phoenix.HTML.FormField, required: true
+  attr :options, :list, default: []
+  attr :label, :string
+  
+  def rich_select(assigns) do
+    ~H"""
+    <div class="form-field">
+      <.label for={@field.id}><%= @label %></.label>
+      <select id={@field.id} name={@field.name} class="custom-select">
+        <option value="">Choose an option</option>
+        <%= for {label, value} <- @options do %>
+          <option value={value} selected={to_string(value) == to_string(@field.value)}>
+            <%= label %>
+          </option>
+        <% end %>
+      </select>
+      <.error :for={msg <- @field.errors}><%= msg %></.error>
+    </div>
+    """
+  end
+end
+```
+
+### Form Performance Optimization
+
+For forms with many fields, optimize updates:
+
+```elixir
+def handle_event("validate", %{"form" => params, "_target" => target}, socket) do
+  # Only validate changed fields for better performance
+  form = 
+    socket.assigns.form
+    |> AshPhoenix.Form.validate(params, errors: false)
+    |> maybe_validate_field(target)
+    
+  {:noreply, assign(socket, form: form)}
+end
+
+defp maybe_validate_field(form, [field_name]) when is_binary(field_name) do
+  # Custom validation logic for specific fields
+  AshPhoenix.Form.validate(form, %{}, errors: [String.to_atom(field_name)])
+end
+
+defp maybe_validate_field(form, _), do: form
 ```
 
 ## Best Practices
