@@ -1,6 +1,6 @@
 ---
 description: 
-globs: 
+globs: lib/**/*.ex,test/**/*.exs,priv/repo/migrations/*.exs
 alwaysApply: false
 ---
 ---
@@ -264,9 +264,9 @@ mix ash.gen.domain Accounts
 
 ## Resource References
 
-- [ash_patterns.mdc](mdc:.cursor/rules/ash_patterns.mdc) - Essential Ash patterns
-- [ash.md](mdc:.cursor/resources/ash.md) - Complete Ash reference  
-- [ash_patterns_and_lessons.md](mdc:.cursor/resources/ash_patterns_and_lessons.md) - Project-specific patterns
-- [testing_tdd.md](mdc:.cursor/resources/testing_tdd.md) - TDD patterns
+- [Ash Patterns](mdc:.cursor/rules/ash_patterns.mdc) (`.cursor/rules/ash_patterns.mdc`) - Essential Ash patterns
+- [Ash Cheatsheet](mdc:.cursor/resources/ash.md) (`.cursor/resources/ash.md`) - Complete Ash reference  
+- [Project Patterns](mdc:.cursor/resources/project_patterns.md) (`.cursor/resources/project_patterns.md`) - Project-specific patterns
+- [Testing TDD](mdc:.cursor/resources/testing_tdd.md) (`.cursor/resources/testing_tdd.md`) - TDD patterns
 
 **Remember**: Always start with the resource, write tests using Ash patterns, and avoid raw Ecto operations. This ensures you're following "The Ash Way" from the beginning.

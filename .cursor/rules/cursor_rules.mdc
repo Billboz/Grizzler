@@ -16,6 +16,43 @@ alwaysApply: true
     - Examples and explanations
   ```
 
+- **Rule Mode Optimization for Agentic Effectiveness:**
+  - **Critical**: Rule mode directly impacts agentic effectiveness and warning presence
+  - **"Manual" mode triggers warnings** because rules are only activated when explicitly mentioned
+  - **Choose optimal mode based on rule purpose and usage patterns**
+
+  **Mode Selection Guidelines:**
+  - **"Always" Mode** - Core workflow rules needed in every conversation:
+    - `dev_workflow.mdc`, `cursor_rules.mdc`, `self_improve.mdc`, `taskmaster.mdc`
+    - No frontmatter required, no warnings
+    - Use sparingly to avoid overwhelming context
+
+  - **"Auto Attached" Mode** - Context-specific rules (RECOMMENDED for most rules):
+    - Automatically included when working on matching file patterns
+    - Eliminates "Manual" mode warnings
+    - Optimal for development effectiveness
+    - **File Pattern Examples:**
+      - Ash rules: `lib/**/*.ex, test/**/*.exs, priv/repo/migrations/*.exs`
+      - Testing rules: `test/**/*.exs, priv/repo/seeds.exs`
+      - Documentation rules: `.cursor/**/*.mdc, README.md, lib/**/*.ex`
+      - Config rules: `config/*.exs, mix.exs`
+      - Migration rules: `priv/repo/migrations/*.exs`
+
+  - **"Agent Requested" Mode** - Specialized rules for AI-driven activation:
+    - Requires clear description in Description field
+    - AI can proactively decide when to fetch the rule
+    - Use for highly specialized patterns
+
+  - **"Manual" Mode** - Avoid for agentic work:
+    - Generates warnings: "This rule may never be used since it has no description or auto attachments"
+    - Poor agentic experience (requires explicit user mention)
+    - Only use for truly exceptional cases
+
+  **Implementation Impact:**
+  - **Auto Attached** rules activate based on file context → Better agentic experience
+  - **Always** rules provide core patterns → Consistent behavior
+  - **Manual** rules stay dormant → Missed optimization opportunities
+
 - **File References:**
   - Use `[filename](mdc:path/to/file)` ([filename](mdc:filename)) to reference files
   - Example: [cursor_rules.mdc](mdc:.cursor/rules/cursor_rules.mdc) for rule references
@@ -23,7 +60,7 @@ alwaysApply: true
 
 - **Code Examples:**
   - Use language-specific code blocks
-  - For Ash code, always reference or cross-check with [ash.md](mdc:.cursor/resources/ash.md) and [ash_patterns_and_lessons.md](mdc:.cursor/resources/ash_patterns_and_lessons.md) for idiomatic patterns
+  - For Ash code, always reference or cross-check with [Ash Cheatsheet](mdc:.cursor/resources/ash.md) (`.cursor/resources/ash.md`) and [Project Patterns](mdc:.cursor/resources/project_patterns.md) (`.cursor/resources/project_patterns.md`) for idiomatic patterns
 
 - **Rule Content Guidelines:**
   - Start with high-level overview

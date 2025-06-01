@@ -1,6 +1,6 @@
 ---
 description: 
-globs: 
+globs: lib/**/*.ex,test/**/*.exs
 alwaysApply: false
 ---
 ---
@@ -147,6 +147,51 @@ User
 |> Ash.read!(domain: MyApp.Accounts)
 ```
 
+## Authorization Patterns
+
+### Using Authorization Functions
+
+Ash automatically generates authorization check functions for each code interface action:
+
+```elixir
+# Check permissions before showing UI elements
+if MyApp.Blog.can_create_post?(current_user) do
+  # Show create button
+  render_create_button()
+end
+
+# Check specific resource permissions
+if MyApp.Blog.can_update_post?(current_user, post) do
+  # Show edit button
+  render_edit_button(post)
+end
+
+# Use in conditionals for access control
+if MyApp.Blog.can_destroy_comment?(current_user, comment) do
+  # Allow deletion
+  MyApp.Blog.destroy_comment!(comment)
+else
+  # Handle unauthorized access
+  {:error, :forbidden}
+end
+```
+
+### Authorization in Tests
+
+```elixir
+test "user can only edit their own posts" do
+  user = create_user()
+  other_user = create_user()
+  post = create_post(author_id: user.id)
+  
+  # Test positive case
+  assert MyApp.Blog.can_update_post?(user, post)
+  
+  # Test negative case
+  refute MyApp.Blog.can_update_post?(other_user, post)
+end
+```
+
 ## Test Patterns
 
 ### Basic Test Setup
@@ -202,7 +247,7 @@ end
 ## Resource References
 
 For more comprehensive patterns and examples:
-- [ash.md](mdc:.cursor/resources/ash.md) - Complete Ash reference
-- [ash_patterns_and_lessons.md](mdc:.cursor/resources/ash_patterns_and_lessons.md) - Project-specific patterns
-- [testing_tdd.md](mdc:.cursor/resources/testing_tdd.md) - TDD patterns
-- [ash_dev_flow.mdc](mdc:.cursor/rules/ash_dev_flow.mdc) - Development workflow
+- [Ash Core Reference](mdc:.cursor/resources/ash.md) (`.cursor/resources/ash.md`) - Complete Ash reference
+- [Project Patterns](mdc:.cursor/resources/project_patterns.md) (`.cursor/resources/project_patterns.md`) - Project-specific patterns
+- [Testing TDD](mdc:.cursor/resources/testing_tdd.md) (`.cursor/resources/testing_tdd.md`) - TDD patterns
+- [Ash Dev Flow](mdc:.cursor/rules/ash_dev_flow.mdc) (`.cursor/rules/ash_dev_flow.mdc`) - Development workflow

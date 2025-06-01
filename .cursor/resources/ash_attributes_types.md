@@ -102,4 +102,4 @@ attribute :price, :decimal, constraints: [precision: 10, scale: 2], public?: tru
 
 ---
 
-*This guide covers attribute and type patterns extracted from project experience. For canonical Ash attribute documentation, consult [ash.md](ash.md) and the [official Ash documentation](https://hexdocs.pm/ash/3.5.9/).* 
+*This guide covers attribute and type patterns extracted from project experience. For canonical Ash attribute documentation, consult [ash.md](ash.md) and the [official Ash documentation](https://hexdocs.pm/ash/3.5.13/).* 

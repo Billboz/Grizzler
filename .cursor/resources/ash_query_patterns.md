@@ -227,4 +227,4 @@ page = MyApp.Blog.Post
 
 ---
 
-*This guide covers query patterns extracted from project experience. For canonical Ash query documentation, consult [ash.md](ash.md) and the [official Ash documentation](https://hexdocs.pm/ash/3.5.9/).* 
+*This guide covers query patterns extracted from project experience. For canonical Ash query documentation, consult [ash.md](ash.md) and the [official Ash documentation](https://hexdocs.pm/ash/3.5.13/).* 

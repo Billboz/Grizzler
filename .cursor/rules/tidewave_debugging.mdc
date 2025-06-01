@@ -1,5 +1,245 @@
 ---
-description:
-globs:
+description: 
+globs: **/*.ex,**/*.exs
 alwaysApply: false
 ---
+---
+description: Using Tidewave for interactive debugging and data inspection in development
+globs: **/*.ex, **/*.exs
+alwaysApply: false
+---
+
+# Tidewave Interactive Debugging
+
+**Always use Tidewave for debugging complex data structures, relationships, and Ash resources instead of IO.inspect.**
+
+## Core Principles
+
+- **Replace `IO.inspect`** with `Tidewave.inspect` for complex data
+- **Use Tidewave web dashboard** for interactive exploration
+- **Debug Ash relationships and policies** interactively
+- **Explore application state** in real-time during development
+
+## Setup and Configuration
+
+Tidewave is already installed and configured in this project:
+
+```elixir
+# mix.exs - Already present
+{:tidewave, "~> 0.1", only: [:dev]}
+
+# lib/grizzler_web/endpoint.ex - Already configured
+if Code.ensure_loaded?(Tidewave) do
+  plug Tidewave
+end
+```
+
+## Basic Usage Patterns
+
+### 1. Replace IO.inspect in Tests
+
+❌ **Old Pattern**
+```elixir
+test "loads user relationship" do
+  post = create_post()
+  post_with_user = Blog.Post |> Ash.get!(post.id, load: [:user])
+  
+  # Hard to read, not interactive
+  IO.inspect(post_with_user.user, label: "Loaded user")
+  
+  assert post_with_user.user.id == user.id
+end
+```
+
+✅ **New Pattern**
+```elixir
+test "loads user relationship" do
+  post = create_post()
+  post_with_user = Blog.Post |> Ash.get!(post.id, load: [:user])
+  
+  # Interactive, rich visualization
+  Tidewave.inspect(post_with_user.user)
+  
+  assert post_with_user.user.id == user.id
+end
+```
+
+### 2. Interactive Development Sessions
+
+```bash
+# Start IEx with Tidewave
+iex -S mix
+
+# In IEx - Start web dashboard
+iex> Tidewave.start()
+# Opens http://localhost:4000/tidewave
+
+# Inspect any data interactively
+iex> user = Grizzler.Accounts.User |> Ash.read_one!()
+iex> Tidewave.inspect(user)
+
+# Explore complex nested data
+iex> posts = Grizzler.Blog.Post |> Ash.Query.load([:user]) |> Ash.read!()
+iex> Tidewave.inspect(posts)
+```
+
+### 3. Debugging Ash Relationships
+
+```elixir
+def debug_post_relationships do
+  post = Blog.Post 
+  |> Ash.Query.load([:user, :comments])
+  |> Ash.read_one!()
+  
+  # Visualize the entire loaded structure
+  Tidewave.inspect(post)
+  
+  # Explore specific relationships
+  Tidewave.inspect(post.user)
+  Tidewave.inspect(post.comments)
+end
+```
+
+### 4. Policy and Authorization Debugging
+
+```elixir
+test "debug authorization policies" do
+  user = create_user()
+  post = create_post(user_id: user.id)
+  other_user = create_user()
+  
+  # Inspect policy results interactively
+  can_update = Ash.can?({post, :update}, other_user, domain: Grizzler.Blog)
+  
+  Tidewave.inspect(%{
+    post: post,
+    actor: other_user,
+    can_update: can_update,
+    policies: "explore in dashboard"
+  })
+end
+```
+
+## Advanced Tidewave Features
+
+### 1. Process and State Exploration
+
+```elixir
+# Explore running processes
+Tidewave.inspect(:observer.start())
+
+# Explore ETS tables
+Tidewave.inspect(:ets.all())
+
+# Application state
+Tidewave.inspect(Application.get_all_env(:grizzler))
+```
+
+### 2. Pipeline Debugging
+
+```elixir
+def complex_data_pipeline(user_id) do
+  user_id
+  |> get_user_posts()
+  |> Tidewave.inspect()  # Step 1 visualization
+  |> filter_published()
+  |> Tidewave.inspect()  # Step 2 visualization  
+  |> load_comments()
+  |> Tidewave.inspect()  # Final result
+end
+```
+
+### 3. Test Data Exploration
+
+```elixir
+describe "complex relationships" do
+  setup do
+    user = create_user()
+    posts = create_posts_for_user(user, 3)
+    comments = create_comments_for_posts(posts, 5)
+    
+    # Explore the entire test data structure
+    test_data = %{user: user, posts: posts, comments: comments}
+    Tidewave.inspect(test_data)
+    
+    {:ok, test_data}
+  end
+  
+  test "validates complex scenario", %{user: user, posts: posts} do
+    # Test implementation with rich data exploration
+  end
+end
+```
+
+## When to Use Tidewave vs Other Tools
+
+### Use Tidewave For:
+- ✅ **Complex nested data structures** (Ash resources with relationships)
+- ✅ **Interactive debugging sessions** 
+- ✅ **Exploring unknown data shapes**
+- ✅ **Process and application state inspection**
+- ✅ **Test data validation and exploration**
+- ✅ **Policy and authorization debugging**
+
+### Use IO.inspect For:
+- ✅ **Simple values** (strings, numbers, small maps)
+- ✅ **Quick pipeline debugging** with `|>`
+- ✅ **CI/CD environments** (where web UI isn't available)
+
+### Use dbg For:
+- ✅ **Step-by-step pipeline debugging**
+- ✅ **Local development with breakpoints**
+
+## Performance Considerations
+
+```elixir
+# Tidewave only in development/test
+if Mix.env() in [:dev, :test] do
+  Tidewave.inspect(large_data_structure)
+else
+  # Production - use structured logging
+  Logger.info("Data processed", data: inspect(data, limit: :infinity))
+end
+```
+
+## Integration with Development Workflow
+
+1. **Start development session** with `iex -S mix`
+2. **Launch Tidewave dashboard** with `Tidewave.start()`
+3. **Add Tidewave.inspect** to any complex data you need to understand
+4. **Explore interactively** in the web dashboard
+5. **Remove or comment out** Tidewave calls before committing
+
+## Common Use Cases in This Project
+
+### Debugging Ash Resources
+```elixir
+# User with posts and authentication state
+user = Accounts.User |> Ash.Query.load([:posts]) |> Ash.read_one!()
+Tidewave.inspect(user)
+
+# Post with user relationship
+post = Blog.Post |> Ash.Query.load([:user]) |> Ash.read_one!()
+Tidewave.inspect(post)
+```
+
+### Test Debugging
+```elixir
+test "complex blog feature" do
+  setup_data = create_complex_blog_scenario()
+  Tidewave.inspect(setup_data)
+  
+  result = perform_complex_operation(setup_data)
+  Tidewave.inspect(result)
+  
+  # Assertions...
+end
+```
+
+## References
+
+- [Tidewave Documentation](mdc:https:/hexdocs.pm/tidewave)
+- [debugging.mdc](mdc:.cursor/rules/debugging.mdc) for general debugging rules
+- [testing_tdd.md](mdc:.cursor/resources/testing_tdd.md) for testing patterns
+
+**Remember: Tidewave provides rich, interactive data exploration that makes debugging complex Ash applications significantly faster and more effective.**

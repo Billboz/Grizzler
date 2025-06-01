@@ -1,5 +1,108 @@
 ---
-description:
-globs:
+description: 
+globs: mix.exs,README.md,lib/**/*.ex
 alwaysApply: false
 ---
+---
+description: High-level overview of the Grizzler project structure and architecture
+globs: **/*
+alwaysApply: false
+---
+
+# Grizzler Project Overview
+
+## **Project Description**
+Grizzler is a modern Elixir/Phoenix application built with the Ash Framework. The application emphasizes:
+- **Domain-driven design** with Ash resources and domains
+- **Type-safe development** using Ash's declarative resource definitions
+- **Real-time features** via Phoenix LiveView
+- **Robust authentication** with Ash Authentication
+- **AI-enhanced development** with comprehensive tooling and documentation
+
+## **Technology Stack**
+
+### **Core Framework**
+- **Elixir**: Functional programming language with actor model concurrency
+- **Phoenix**: Web framework for real-time, fault-tolerant applications
+- **Ash Framework**: Declarative, resource-oriented framework for business logic
+
+### **Data & Persistence**
+- **PostgreSQL**: Primary database with advanced features
+- **Ash Postgres**: Ash data layer for PostgreSQL integration
+- **Ecto**: Database wrapper and query generator
+
+### **Authentication & Security**
+- **Ash Authentication**: Declarative authentication system
+- **Ash Authentication Phoenix**: Phoenix integration for auth
+- **bcrypt**: Password hashing
+
+### **UI & Frontend**
+- **Phoenix LiveView**: Server-rendered real-time UI
+- **Tailwind CSS**: Utility-first CSS framework
+- **Heroicons**: Icon library
+- **Phoenix HTML**: Template rendering
+
+### **Background Processing**
+- **Oban**: Robust job processing system
+- **Ash Oban**: Ash integration for background jobs
+
+### **API & Integration**
+- **Ash JSON API**: Declarative API generation
+- **Phoenix PubSub**: Real-time messaging
+- **Finch**: HTTP client for external integrations
+
+### **AI & Enhanced Development**
+- **Ash AI**: AI integration capabilities
+- **LangChain**: AI/LLM integration framework
+- **Taskmaster AI**: Development task management
+- **Tidewave**: Advanced debugging and introspection
+
+## **Application Architecture**
+
+### **Domain-Driven Structure**
+```
+lib/grizzler/               # Business Logic Layer
+├── accounts/               # User management domain
+├── [other domains]/        # Feature-specific domains
+└── application.ex          # OTP application supervisor
+
+lib/grizzler_web/           # Presentation Layer
+├── controllers/            # Phoenix controllers
+├── components/             # LiveView components
+└── [web modules]/          # Web-specific logic
+```
+
+### **Core Domains**
+
+#### **Accounts Domain**
+- **User Resource**: Authentication, authorization, user management
+- **Token Resource**: Session and API token management
+- **Authentication Flow**: Login, registration, password reset
+
+### **Development Methodology**
+
+#### **Ash-First Development**
+1. **Define Resources**: Start with Ash resource definitions
+2. **Implement Actions**: Add CRUD and custom actions
+3. **Add Policies**: Implement authorization rules
+4. **Build UI**: Create Phoenix LiveView interfaces
+5. **Test Thoroughly**: Comprehensive testing at all layers
+
+#### **Test-Driven Development (TDD)**
+- **Resource Tests**: Validate business logic and constraints
+- **Integration Tests**: End-to-end workflow testing
+- **UI Tests**: LiveView and component testing
+- **Performance Tests**: Load and stress testing
+
+#### **AI-Enhanced Development**
+- **Task Management**: Using Taskmaster AI for project planning
+- **Code Generation**: Ash and Phoenix generators
+- **Documentation**: Living documentation with MDC files
+- **Debugging**: Tidewave for advanced introspection
+
+References:
+- [ash_dev_flow.mdc](mdc:.cursor/rules/ash_dev_flow.mdc) - Development methodology
+- [ash_patterns.mdc](mdc:.cursor/rules/ash_patterns.mdc) - Common Ash patterns
+- [dev_workflow.mdc](mdc:.cursor/rules/dev_workflow.mdc) - Task-driven development
+- [Ash Framework Guide](mdc:https:/hexdocs.pm/ash/get-started.html)
+- [Phoenix Framework Guide](mdc:https:/hexdocs.pm/phoenix/overview.html)

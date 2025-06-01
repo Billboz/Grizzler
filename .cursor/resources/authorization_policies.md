@@ -474,4 +474,4 @@ end
 
 ---
 
-*This guide covers authorization patterns for Ash Framework 3.5.9. For the latest features and API changes, consult the [official Ash Policy documentation](https://hexdocs.pm/ash/3.5.9/policies.html).* 
+*This guide covers authorization patterns for Ash Framework 3.5.13. For the latest features and API changes, consult the [official Ash Policy documentation](https://hexdocs.pm/ash/3.5.13/policies.html).* 

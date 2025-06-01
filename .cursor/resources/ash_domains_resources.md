@@ -98,4 +98,4 @@ This allows Ash's tasks (like code generation and migrations) to find all resour
 
 ---
 
-*This guide covers domain and resource patterns extracted from project experience. For canonical Ash domain and resource documentation, consult [ash.md](ash.md) and the [official Ash documentation](https://hexdocs.pm/ash/3.5.9/).* 
+*This guide covers domain and resource patterns extracted from project experience. For canonical Ash domain and resource documentation, consult [ash.md](ash.md) and the [official Ash documentation](https://hexdocs.pm/ash/3.5.13/).* 

@@ -6,7 +6,7 @@
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Core Idea**          | Multiplayer chore & skills tracker for up to 4 active players; gamified points system with daily/weekly scoring and leaderboards.                                                                                                                                                       |
 | **Users**              | • **Players** see tasks, run timers, mark complete, view progress<br>• **Admins** create/edit tasks, approve completions, manage player settings, and can also play as players                                                                                                          |
-| **Learning Objective** | Build a real-world family application using **Ash Framework 3.5.12 + Phoenix 1.7.21 + LiveView 1.0.12** with Ash-specific TDD methodology from backend resources to LiveView UI                                                                                                      |
+| **Learning Objective** | Build a real-world family application using **Ash Framework 3.5.13 + Phoenix 1.7.21 + LiveView 1.0.14** with Ash-specific TDD methodology from backend resources to LiveView UI                                                                                                         |
 | **Deployment**         | Single-tenant Fly.io release, PostgreSQL database                                                                                                                                                                                                                                       |
 | **UI/UX**              | • **Single-screen responsive design** (1280x720px primary viewport)<br>• **Dark-mode grayscale palette** inspired by Apple/Google design principles<br>• **Real-time updates** via Phoenix PubSub and LiveView<br>• **Minimalist, functional interface** with subtle micro-interactions |
 
@@ -14,23 +14,23 @@
 
 ## 2. Technical Stack
 
-| Layer                | Technology                    | Version                       |
-| -------------------- | ----------------------------- | ----------------------------- |
-| **Language**         | Elixir                        | Latest stable                 |
-| **Platform**         | Erlang/OTP                    | Latest stable                 |
-| **Core Framework**   | Ash Framework                 | 3.5.12                        |
-| **Web Framework**    | Phoenix                       | 1.7.21                        |
-| **Frontend**         | Phoenix LiveView              | 1.0.12                        |
-| **Database**         | PostgreSQL (Ash.Postgres)    | 15.12 (ash_postgres: 2.5.22) |
-| **Authentication**   | Ash Authentication           | 4.8.7 (Magic Link strategy)  |
-| **Auth UI**          | Ash Authentication Phoenix   | 2.7.0                         |
-| **Real-time**        | Phoenix PubSub               | 2.1.3                         |
-| **HTTP Server**      | Bandit                        | 1.6.11                        |
-| **CSS**              | Tailwind CSS                 | 0.2.4                         |
-| **Admin Interface**  | Ash Admin                     | 0.13.5                        |
-| **AI Assistance**    | Ash AI                        | 0.1.7                         |
-| **Background Jobs**  | Ash Oban                      | 0.4.7                         |
-| **API (if needed)**  | Ash JSON API                  | 1.4.32                        |
+| Layer               | Technology                 | Version                      |
+| ------------------- | -------------------------- | ---------------------------- |
+| **Language**        | Elixir                     | Latest stable                |
+| **Platform**        | Erlang/OTP                 | Latest stable                |
+| **Core Framework**  | Ash Framework              | 3.5.13                       |
+| **Web Framework**   | Phoenix                    | 1.7.21                       |
+| **Frontend**        | Phoenix LiveView           | 1.0.14                       |
+| **Database**        | PostgreSQL (Ash.Postgres)  | 15.12 (ash_postgres: 2.5.22) |
+| **Authentication**  | Ash Authentication         | 4.8.7 (Magic Link strategy)  |
+| **Auth UI**         | Ash Authentication Phoenix | 2.7.0                        |
+| **Real-time**       | Phoenix PubSub             | 2.1.3                        |
+| **HTTP Server**     | Bandit                     | 1.6.11                       |
+| **CSS**             | Tailwind CSS               | 0.2.4                        |
+| **Admin Interface** | Ash Admin                  | 0.13.5                       |
+| **AI Assistance**   | Ash AI                     | 0.1.7                        |
+| **Background Jobs** | Ash Oban                   | 0.4.7                        |
+| **API (if needed)** | Ash JSON API               | 1.4.32                       |
 
 **Key Dependencies**: Includes comprehensive Ash ecosystem tools for enhanced AI coding assistance and modern Elixir patterns.
 
@@ -445,20 +445,20 @@ task_description, points, category, list_order, required_sunday, required_monday
 
 ## 12. Implementation Milestones
 
-| #   | Phase & Component              | Backend Focus                     | Testing Focus                   | Frontend Focus               | Status  |
-| --- | ------------------------------ | --------------------------------- | ------------------------------- | ---------------------------- | ------- |
-| 1   | Magic Link Authentication      | Ash Auth resource & actions       | Auth action & policy tests      | Login/magic link UI          | Pending |
-| 2   | Player Name Display            | User resource queries             | User resource & query tests     | Name display component       | Pending |
-| 3   | Player Tabs Interface          | Multi-user queries & numbering    | Player list & session tests     | Player tabs with scores      | Pending |
-| 4   | Weekly Score Display           | DailyTask aggregations            | Calculation & aggregate tests   | Weekly score block           | Pending |
-| 5   | Category Navigation            | Task category filtering           | Category query tests            | Category tabs                | Pending |
-| 6   | Task Table Structure           | Task resource & relationships     | Task resource tests             | 6-column task table          | Pending |
-| 7   | Task Timer Functionality       | DailyTask state management        | Action & state transition tests | Timer controls & display     | Pending |
-| 8   | Admin Mode Toggle              | User role & authorization         | Policy & role tests             | Admin toggle switch          | Pending |
-| 9   | Task Creation Interface        | Task create actions & validation  | Create action & validation tests| Task creation form           | Pending |
-| 10  | Task Approval System           | Approval workflow & points        | Approval action tests           | Admin approval interface     | Pending |
-| 11  | Real-time Updates              | PubSub integration with Ash       | PubSub & LiveView tests         | Live data synchronization    | Pending |
-| 12  | Growth Task Selection          | GrowthTaskCompletion constraints  | Growth task constraint tests    | Growth task interface        | Pending |
+| #   | Phase & Component         | Backend Focus                    | Testing Focus                    | Frontend Focus            | Status  |
+| --- | ------------------------- | -------------------------------- | -------------------------------- | ------------------------- | ------- |
+| 1   | Magic Link Authentication | Ash Auth resource & actions      | Auth action & policy tests       | Login/magic link UI       | Pending |
+| 2   | Player Name Display       | User resource queries            | User resource & query tests      | Name display component    | Pending |
+| 3   | Player Tabs Interface     | Multi-user queries & numbering   | Player list & session tests      | Player tabs with scores   | Pending |
+| 4   | Weekly Score Display      | DailyTask aggregations           | Calculation & aggregate tests    | Weekly score block        | Pending |
+| 5   | Category Navigation       | Task category filtering          | Category query tests             | Category tabs             | Pending |
+| 6   | Task Table Structure      | Task resource & relationships    | Task resource tests              | 6-column task table       | Pending |
+| 7   | Task Timer Functionality  | DailyTask state management       | Action & state transition tests  | Timer controls & display  | Pending |
+| 8   | Admin Mode Toggle         | User role & authorization        | Policy & role tests              | Admin toggle switch       | Pending |
+| 9   | Task Creation Interface   | Task create actions & validation | Create action & validation tests | Task creation form        | Pending |
+| 10  | Task Approval System      | Approval workflow & points       | Approval action tests            | Admin approval interface  | Pending |
+| 11  | Real-time Updates         | PubSub integration with Ash      | PubSub & LiveView tests          | Live data synchronization | Pending |
+| 12  | Growth Task Selection     | GrowthTaskCompletion constraints | Growth task constraint tests     | Growth task interface     | Pending |
 
 ---
 
@@ -523,7 +523,7 @@ task_description, points, category, list_order, required_sunday, required_monday
 ---
 
 **Document Version**: v2025-05-26.1  
-**Target Framework**: Ash 3.5.12 + Phoenix 1.7.21 + LiveView 1.0.12  
+**Target Framework**: Ash 3.5.13 + Phoenix 1.7.21 + LiveView 1.0.14  
 **Development Approach**: Ash-Specific TDD with Component-Driven Sequence  
 **Primary User**: Family of 4 players + admin(s)  
 **AI Assistance**: Enhanced with Ash AI 0.1.7 and Ash ecosystem tooling

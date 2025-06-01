@@ -200,4 +200,4 @@ config :ash_oban, :debug_all_triggers?, true
 
 ---
 
-*This guide covers Ash Oban integration patterns for Ash Framework 3.5.9. For the latest features and API changes, consult the [official AshOban documentation](https://hexdocs.pm/ash_oban/).* 
+*This guide covers Ash Oban integration patterns for Ash Framework 3.5.13. For the latest features and API changes, consult the [official AshOban documentation](https://hexdocs.pm/ash_oban/).* 

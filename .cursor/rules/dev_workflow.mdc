@@ -15,7 +15,7 @@ Task Master offers two primary ways to interact:
     - For AI agents and integrated development environments (like Cursor), interacting via the **MCP server is the preferred method**.
     - The MCP server exposes Task Master functionality through a set of tools (e.g., `get_tasks`, `add_subtask`).
     - This method offers better performance, structured data exchange, and richer error handling compared to CLI parsing.
-    - Refer to [`mcp.mdc`](mdc:.cursor/rules/mcp.mdc) for details on the MCP architecture and available tools.
+    - Refer to [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc) for details on the MCP architecture and available tools.
     - A comprehensive list and description of MCP tools and their corresponding CLI commands can be found in [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc).
     - **Restart the MCP server** if core logic in `scripts/modules` or MCP tool/direct function definitions change.
 
@@ -39,7 +39,7 @@ Task Master offers two primary ways to interact:
 -   Break down complex tasks using `expand_task` / `task-master expand --id=<id> --force --research` (see [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc)) with appropriate flags like `--force` (to replace existing subtasks) and `--research`.
 -   Clear existing subtasks if needed using `clear_subtasks` / `task-master clear-subtasks --id=<id>` (see [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc)) before regenerating
 -   Implement code following task details, dependencies, and project standards
--   Verify tasks according to test strategies before marking as complete (See [`tests.mdc`](mdc:.cursor/rules/tests.mdc))
+-   Verify tasks according to test strategies before marking as complete
 -   Mark completed tasks with `set_task_status` / `task-master set-status --id=<id> --status=done` (see [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc))
 -   Update dependent tasks when implementation differs from original plan using `update` / `task-master update --from=<id> --prompt="..."` or `update_task` / `task-master update-task --id=<id> --prompt="..."` (see [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc))
 -   Add new tasks discovered during implementation using `add_task` / `task-master add-task --prompt="..." --research` (see [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc)).
@@ -49,7 +49,41 @@ Task Master offers two primary ways to interact:
 -   Maintain valid dependency structure with `add_dependency`/`remove_dependency` tools or `task-master add-dependency`/`remove-dependency` commands, `validate_dependencies` / `task-master validate-dependencies`, and `fix_dependencies` / `task-master fix-dependencies` (see [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc)) when needed
 -   Respect dependency chains and task priorities when selecting work
 -   Report progress regularly using `get_tasks` / `task-master list`
--   Reorganize tasks as needed using `move_task` / `task-master move --from=<id> --to=<id>` (see [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc)) to change task hierarchy or ordering
+
+## The Ash Way: Resource-First TDD & Implementation Flow
+
+- For all Ash resource/domain logic work, follow the Ash-first, resource/action/policy-centric TDD and implementation flow as described in [ash_dev_flow.mdc](mdc:.cursor/rules/ash_dev_flow.mdc).
+- Always:
+  - Start with a test describing the desired resource/action behavior (using Ash idioms)
+  - Define or update the resource (attributes, actions, validations, policies)
+  - Configure the data layer and migrations
+  - Iterate: run the test, implement the minimal change to make it pass
+  - Debug and verify at each step (use IO.inspect, dbg, terminal checks, see [debugging.mdc](mdc:.cursor/rules/debugging.mdc))
+  - Only then, surface to API/UI and address syntax/style
+  - Update rules and resources with new patterns or lessons
+- This approach reduces error loops, ensures idiomatic Ash code, and helps both AI and human developers learn and improve.
+
+## Troubleshooting and Debugging:
+  - Always reference the [debugging.mdc](mdc:.cursor/rules/debugging.mdc) rule when encountering errors or unexpected behavior.
+  - When a test fails or code behaves unexpectedly, consider and suggest Elixir debugging tools (IO.inspect, dbg, Tidewave) as described in [debugging.mdc](mdc:.cursor/rules/debugging.mdc).
+  - Encourage users to use these tools and explain their output for learning and faster troubleshooting.
+
+## At the completion of every subtask, always remind the user to make a git commit
+- Provide a recommended commit subject line that includes the subtask/task number and a concise description
+- Example subject: `feat(module): implement feature for subtask <subtaskId>`
+- The reminder and subject line must be included in the completion message for every subtask
+- This ensures traceability and consistent commit hygiene
+
+## For every code or implementation response, always include:
+- Links to official documentation (with version) used for patterns or syntax
+- References to relevant codebase files/lines that informed the implementation
+- Any internal rules (from .cursor/rules) that were applied
+- **This must be included in the completion message, not just on request**
+- **Format:**
+  - "References:"
+    - [Ash 3.5.13 Resource Docs](mdc:https:/hexdocs.pm/ash/3.5.13/resources.html)
+    - [lib/grizzler/tasks/task.ex](mdc:lib/grizzler/tasks/task.ex)
+    - [dev_workflow.mdc](mdc:.cursor/rules/dev_workflow.mdc)
 
 ## Task Complexity Analysis
 

@@ -1,8 +1,14 @@
 ---
-description:
-globs:
+description: 
+globs: lib/**/*.ex,priv/repo/migrations/*.exs
 alwaysApply: false
 ---
+---
+description: Best practices for using Ash generators and code generation workflows
+globs: lib/**/*.ex, priv/repo/migrations/*.exs
+alwaysApply: false
+---
+
 # Ash Code Generation Best Practices
 
 **Always use Ash generators instead of manually creating resources, domains, or migrations.**
@@ -186,9 +192,10 @@ mix ecto.migrate
 
 ## References
 
-- [Ash Generators Documentation](https://hexdocs.pm/ash/generators.html)
-- [Ash.Resource DSL](https://hexdocs.pm/ash/dsl-ash-resource.html)
-- [dev_workflow.mdc](mdc:.cursor/rules/dev_workflow.mdc) for overall workflow
-- [ash_patterns_and_lessons.md](mdc:.cursor/resources/ash_patterns_and_lessons.md) for resource patterns
+- [Ash Generators Documentation](mdc:https:/hexdocs.pm/ash/generators.html) (hexdocs.pm/ash/generators.html)
+- [Ash.Resource DSL](mdc:https:/hexdocs.pm/ash/dsl-ash-resource.html) (hexdocs.pm/ash/dsl-ash-resource.html)
+- [Dev Workflow](mdc:.cursor/rules/dev_workflow.mdc) (`.cursor/rules/dev_workflow.mdc`) - overall workflow
+- [Project Patterns](mdc:.cursor/resources/project_patterns.md) (`.cursor/resources/project_patterns.md`) - resource patterns
 
 **Remember: Ash generators create idiomatic, maintainable code patterns that follow framework conventions.**
+

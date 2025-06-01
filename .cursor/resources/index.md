@@ -1,9 +1,55 @@
 # Ash Framework Resources Index
-**Complete resource navigation for Ash 3.5.9 development**
+**Complete resource navigation for Ash 3.5.13 development**
+
+## AI Agent Decision Matrix
+
+**Use this decision tree to quickly find the right resource for your task:**
+
+### 🚀 Getting Started / New to Ash
+- **First time with Ash?** → [ash.md](ash.md) - Start here for core concepts
+- **Setting up PostgreSQL?** → [ash_postgres.md](ash_postgres.md) - Data layer setup
+- **Integrating with Phoenix?** → [ash_phoenix.md](ash_phoenix.md) - Web framework integration
+
+### 🏗️ Building & Development
+- **Creating resources?** → [ash_domains_resources.md](ash_domains_resources.md) + [project_patterns.md](project_patterns.md)
+- **Defining attributes?** → [ash_attributes_types.md](ash_attributes_types.md)
+- **Setting up relationships?** → [ash_relationships.md](ash_relationships.md)
+- **Writing actions?** → [ash_actions.md](ash_actions.md)
+- **Using code generation?** → [igniter.md](igniter.md) + check mix tasks in [mix_tasks.md](mix_tasks.md)
+
+### 🔍 Querying & Data
+- **Writing complex queries?** → [ash_query_patterns.md](ash_query_patterns.md)
+- **Filtering/sorting data?** → [ash_query_patterns.md](ash_query_patterns.md)
+- **Working with aggregates?** → [ash_query_patterns.md](ash_query_patterns.md)
+
+### 🔒 Security & Authorization
+- **Need authorization/policies?** → [authorization_policies.md](authorization_policies.md)
+- **User permissions?** → [authorization_policies.md](authorization_policies.md)
+- **Resource-level security?** → [authorization_policies.md](authorization_policies.md)
+
+### 🧪 Testing & Quality
+- **Writing tests?** → [testing_tdd.md](testing_tdd.md)
+- **TDD methodology?** → [testing_tdd.md](testing_tdd.md)
+- **Test data setup?** → [testing_tdd.md](testing_tdd.md)
+
+### 🤖 AI & Advanced Features
+- **AI/LLM integration?** → [ash_ai.md](ash_ai.md)
+- **Background jobs?** → [ash_oban.md](ash_oban.md)
+- **Vectorization/embeddings?** → [ash_ai.md](ash_ai.md)
+
+### 🐛 Debugging & Troubleshooting
+- **Getting errors?** → [ash_troubleshooting.md](ash_troubleshooting.md)
+- **Common pitfalls?** → [ash_troubleshooting.md](ash_troubleshooting.md)
+- **Performance issues?** → [ash_troubleshooting.md](ash_troubleshooting.md)
+
+### 📋 Reference & Commands
+- **Need mix commands?** → [mix_tasks.md](mix_tasks.md)
+- **Project-specific patterns?** → [project_patterns.md](project_patterns.md)
+- **Real-world examples?** → [project_patterns.md](project_patterns.md)
 
 ## Entry Point for AI Agents
 
-This directory contains comprehensive, version-matched documentation for Ash Framework 3.5.9 and related libraries. All content is organized by topic and sourced from canonical Ash Core Team documentation, with additional project-specific patterns noted where applicable.
+This directory contains comprehensive, version-matched documentation for Ash Framework 3.5.13 and related libraries. All content is organized by topic and sourced from canonical Ash Core Team documentation, with additional project-specific patterns noted where applicable.
 
 ## Core Framework Documentation
 
@@ -36,7 +82,7 @@ This directory contains comprehensive, version-matched documentation for Ash Fra
 - **[ash_troubleshooting.md](ash_troubleshooting.md)** - Common pitfalls, solutions, and debugging *(non-canonical)*
 
 ### Project Management & Tasks
-- **[mix_tasks.md](mix_tasks.md)** - Complete mix tasks reference for Ash 3.5.9 *(non-canonical)*
+- **[mix_tasks.md](mix_tasks.md)** - Complete mix tasks reference for Ash 3.5.13 *(non-canonical)*
 - **[project_patterns.md](project_patterns.md)** - Real-world patterns and lessons from Grizzler project *(non-canonical)*
 
 ### Reference Materials
@@ -72,11 +118,13 @@ All non-canonical content is clearly marked with attribution and should be verif
 ## Version Compatibility
 
 All resources in this directory are specifically curated for:
-- **Ash Framework**: 3.5.9
+- **Ash Framework**: 3.5.13
 - **AshPostgres**: Latest compatible version
 - **AshPhoenix**: Latest compatible version
 - **Phoenix Framework**: As specified in project mix.exs
 - **Elixir**: As specified in project mix.exs
+- **Phoenix**: 1.7.21
+- **LiveView**: 1.0.14
 
 ---
 

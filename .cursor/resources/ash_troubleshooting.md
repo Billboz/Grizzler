@@ -177,4 +177,4 @@ This section highlights frequent mistakes, confusing behaviors, and troubleshoot
 
 ---
 
-*This guide covers troubleshooting patterns extracted from project experience. For canonical debugging documentation, consult the [official Ash documentation](https://hexdocs.pm/ash/3.5.9/).* 
+*This guide covers troubleshooting patterns extracted from project experience. For the most current information, consult the [official Ash documentation](https://hexdocs.pm/ash/3.5.13/).* 

@@ -1,5 +1,44 @@
 ---
-description:
-globs:
+description: 
+globs: **/*.ex,**/*.exs
 alwaysApply: false
 ---
+---
+description: Debugging techniques and tools for troubleshooting Elixir and Ash applications
+globs: **/*.ex, **/*.exs
+alwaysApply: false
+---
+
+- **Always consider and suggest Elixir debugging tools when troubleshooting errors**
+  - When an error or unexpected behavior occurs, the AI coding assistant must suggest appropriate debugging tools and techniques.
+  - Tools to suggest include:
+    - `IO.inspect/2` for inspecting values at runtime
+    - `dbg/1` or `dbg/2` for interactive debugging (Elixir 1.14+)
+    - Tidewave for distributed tracing or advanced debugging scenarios
+  - Encourage the user to use these tools and explain their output
+  - When suggesting a tool, provide a brief example and explain when/why to use it
+  - This rule applies to all troubleshooting, not just test failures
+
+**Examples:**
+- When a test fails due to an unexpected value, suggest adding `IO.inspect(variable, label: "variable")` before the failing line.
+- For complex data structures or pipelines, suggest using `dbg/1` for step-by-step inspection.
+- For issues that may involve process boundaries or distributed systems, suggest Tidewave and provide a link to its documentation.
+
+## Tidewave: Interactive Debugging & Data Inspection
+
+- **Tidewave is recommended for advanced debugging and data inspection in Elixir/Ash projects**
+  - Install with `{:tidewave, "~> 0.2"}` in your `mix.exs` and run `mix deps.get`
+  - Start an IEx session: `iex -S mix`
+  - Call `Tidewave.start()` for a live, interactive dashboard
+  - Use `Tidewave.inspect(data)` in code or IEx for rich, interactive inspection (especially for complex/nested data)
+  - Prefer Tidewave over `IO.inspect`/`dbg` when you need to:
+    - Explore large or deeply nested data
+    - Browse application state, ETS tables, or processes
+    - Debug interactively in tests or scripts
+
+**References:**
+- [Elixir IO.inspect/2 Docs](mdc:https:/hexdocs.pm/elixir/IO.html#inspect/2)
+- [Elixir dbg/2 Docs](mdc:https:/hexdocs.pm/elixir/Kernel.html#dbg/2)
+- [Tidewave Docs](mdc:https:/hexdocs.pm/tidewave)
+- [dev_workflow.mdc](mdc:.cursor/rules/dev_workflow.mdc)
+- [self_improve.mdc](mdc:.cursor/rules/self_improve.mdc)

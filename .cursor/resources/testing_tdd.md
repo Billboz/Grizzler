@@ -3,7 +3,7 @@
 
 ## Overview
 
-Testing Ash applications requires understanding how to work with Ash's resource-centric architecture, policies, and domain-driven design. This guide covers testing patterns, TDD workflows, and best practices specific to Ash Framework 3.5.9.
+Testing Ash applications requires understanding how to work with Ash's resource-centric architecture, policies, and domain-driven design. This guide covers testing patterns, TDD workflows, and best practices specific to Ash Framework 3.5.13.
 
 ## The Ash Way: Resource-First TDD
 
@@ -40,7 +40,7 @@ Follow this checklist whenever developing a new Ash resource. This process is ba
    - Reference the relevant test or resource file for future reference.
 
 5. **Reference Version-Matched Documentation**
-   - Always use the official docs and guides for Ash 3.5.9.
+   - Always use the official docs and guides for Ash 3.5.13.
    - Prefer patterns that match the project's Ash, Phoenix, and Elixir versions.
 
 6. **Continuous Improvement**
@@ -788,7 +788,7 @@ end
 
 ---
 
-*This guide covers testing patterns for Ash Framework 3.5.9. Always consult the [official Ash testing documentation](https://hexdocs.pm/ash/3.5.9/testing.html) for the latest best practices.* 
+*This guide covers testing patterns for Ash Framework 3.5.13. Always consult the [official Ash testing documentation](https://hexdocs.pm/ash/3.5.13/testing.html) for the latest best practices.* 
 
 ## Additional Patterns from Project Cheatsheet *(Non-Canonical)*
 

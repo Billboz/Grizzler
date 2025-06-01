@@ -128,4 +128,4 @@ Forgetting to specify the `domain:` option in Ash function calls.
 
 ---
 
-*This guide covers action patterns extracted from project experience. For canonical Ash action documentation, consult [ash.md](ash.md) and the [official Ash documentation](https://hexdocs.pm/ash/3.5.9/).* 
+*This guide covers action patterns extracted from project experience. For canonical Ash action documentation, consult [ash.md](ash.md) and the [official Ash documentation](https://hexdocs.pm/ash/3.5.13/).* 

@@ -1,5 +1,294 @@
 ---
-description:
-globs:
+description: 
+globs: test/**/*.exs,priv/repo/seeds.exs
 alwaysApply: false
 ---
+---
+description: Guidelines for choosing between Ash.Seed.seed! and action-based data creation in tests
+globs: test/**/*.exs
+alwaysApply: false
+---
+
+# Ash Test Data Creation Patterns
+
+**Choose the right data creation method based on whether you're testing business logic or need fast test data setup.**
+
+## Core Distinction
+
+### Ash.Seed.seed! - Fast Test Data
+- **Purpose:** Bypass business logic for fast test setup
+- **When:** Test data where business rules don't matter
+- **Performance:** Very fast - direct database insertion
+- **Validation:** Skips changeset validations and policies
+
+### Action-Based Creation - Realistic Flow
+- **Purpose:** Test business logic and real application flow  
+- **When:** Testing validations, policies, side effects
+- **Performance:** Slower - full Ash action pipeline
+- **Validation:** Full changeset validations and policy enforcement
+
+## Usage Patterns
+
+### 1. Test Data Setup (Use Ash.Seed.seed!)
+
+✅ **Fast Test Data - Use Ash.Seed.seed!**
+```elixir
+defp create_user(attrs \\ %{}) do
+  defaults = %{email: "user#{System.unique_integer()}@test.com"}
+  attrs = Map.merge(defaults, attrs)
+  
+  # Fast, bypasses all business logic
+  Ash.Seed.seed!(Grizzler.Accounts.User, attrs)
+end
+
+defp create_post(attrs \\ %{}) do
+  user = attrs[:user] || create_user()
+  
+  defaults = %{
+    title: "Test Post",
+    content: "Test content", 
+    user_id: user.id
+  }
+  attrs = Map.merge(defaults, attrs)
+  
+  Ash.Seed.seed!(Grizzler.Blog.Post, attrs)
+end
+
+test "can load posts with users" do
+  user = create_user()
+  post = create_post(user: user)
+  
+  # Test the loading logic, not creation logic
+  loaded_post = Blog.Post |> Ash.get!(post.id, load: [:user])
+  assert loaded_post.user.id == user.id
+end
+```
+
+### 2. Business Logic Testing (Use Actions)
+
+✅ **Test Business Rules - Use Actions**
+```elixir
+test "validates post title is required" do
+  user = create_user()  # Fast setup with Ash.Seed.seed!
+  
+  # Test the actual business logic
+  assert {:error, changeset} = 
+    Blog.Post
+    |> Ash.Changeset.for_create(:create, %{
+      content: "Content without title",
+      user_id: user.id
+    })
+    |> Ash.create()
+    
+  assert changeset.errors[:title]
+end
+
+test "creates post with full business logic" do
+  user = create_user()  # Fast setup
+  
+  # Test the create action thoroughly
+  assert {:ok, post} = 
+    Blog.Post
+    |> Ash.Changeset.for_create(:create, %{
+      title: "Valid Title",
+      content: "Valid content",
+      user_id: user.id
+    })
+    |> Ash.create()
+    
+  assert post.title == "Valid Title"
+  # Test any side effects, timestamps, etc.
+end
+```
+
+### 3. Authentication Testing (Special Case)
+
+For resources with AshAuthentication, you **cannot** use simple actions:
+
+```elixir
+# ❌ This won't work for AshAuthentication resources
+def create_authenticated_user do
+  User
+  |> Ash.Changeset.for_create(:create, %{email: "test@example.com"})
+  |> Ash.create()  # Fails - no simple :create action
+end
+
+# ✅ Option 1: Use Ash.Seed.seed! (bypass authentication)
+def create_user_fast do
+  Ash.Seed.seed!(Grizzler.Accounts.User, %{
+    email: "test#{System.unique_integer()}@example.com"
+  })
+end
+
+# ✅ Option 2: Test authentication flow
+def create_authenticated_user(email) do
+  # Generate magic link token
+  {:ok, token} = AshAuthentication.Strategy.MagicLink.Token.generate(
+    Grizzler.Accounts.User,
+    %{email: email},
+    Grizzler.Accounts
+  )
+  
+  # Use the authentication action
+  Grizzler.Accounts.User
+  |> Ash.Changeset.for_create(:sign_in_with_magic_link, %{token: token})
+  |> Ash.create!()
+end
+```
+
+## Decision Matrix
+
+| Scenario | Method | Reason |
+|----------|--------|--------|
+| **Test setup data** | `Ash.Seed.seed!` | Fast, don't care about business logic |
+| **Validation testing** | Actions | Need to test the validation logic |
+| **Policy testing** | Actions | Need to test authorization |
+| **Side effect testing** | Actions | Need to test callbacks, changes |
+| **Performance testing** | `Ash.Seed.seed!` | Large datasets, speed matters |
+| **Integration testing** | Actions | Full application flow |
+
+## Production Data Seeding
+
+### Database Seeds (priv/repo/seeds.exs)
+
+```elixir
+# For initial production data (admin users, etc.)
+# Use actions to ensure proper business logic
+
+if Mix.env() in [:dev, :prod] do
+  # Create admin user with full authentication flow
+  case Grizzler.Accounts.User 
+       |> Ash.Query.filter(email: "admin@example.com")
+       |> Ash.read_one() do
+    {:ok, nil} ->
+      # No admin exists, create one
+      admin = create_admin_user("admin@example.com")
+      IO.puts("Created admin user: #{admin.email}")
+    
+    {:ok, _admin} ->
+      IO.puts("Admin user already exists")
+  end
+end
+
+defp create_admin_user(email) do
+  # Use real authentication flow even for seeds
+  {:ok, token} = generate_magic_link_token(email)
+  
+  Grizzler.Accounts.User
+  |> Ash.Changeset.for_create(:sign_in_with_magic_link, %{token: token})
+  |> Ash.create!()
+end
+```
+
+## Test Helper Patterns
+
+### Create Comprehensive Test Helpers
+
+```elixir
+# test/support/test_helpers.ex
+defmodule Grizzler.TestHelpers do
+  @moduledoc """
+  Test helper functions for creating test data.
+  
+  Uses Ash.Seed.seed! for fast test data creation.
+  Create separate functions when you need to test business logic.
+  """
+  
+  def create_user(attrs \\ %{}) do
+    defaults = %{email: "user#{System.unique_integer()}@test.com"}
+    attrs = Map.merge(defaults, attrs)
+    Ash.Seed.seed!(Grizzler.Accounts.User, attrs)
+  end
+  
+  def create_post(attrs \\ %{}) do
+    user = attrs[:user] || create_user()
+    
+    defaults = %{
+      title: "Test Post #{System.unique_integer()}",
+      content: "Test content for post",
+      user_id: user.id
+    }
+    attrs = Map.merge(defaults, attrs) |> Map.delete(:user)
+    
+    Ash.Seed.seed!(Grizzler.Blog.Post, attrs)
+  end
+  
+  # For testing authentication flows specifically
+  def create_authenticated_user(email \\ nil) do
+    email = email || "auth#{System.unique_integer()}@test.com"
+    
+    {:ok, token} = AshAuthentication.Strategy.MagicLink.Token.generate(
+      Grizzler.Accounts.User,
+      %{email: email},
+      Grizzler.Accounts
+    )
+    
+    Grizzler.Accounts.User
+    |> Ash.Changeset.for_create(:sign_in_with_magic_link, %{token: token})
+    |> Ash.create!()
+  end
+end
+```
+
+### Use in Tests
+
+```elixir
+defmodule Grizzler.BlogTest do
+  use Grizzler.DataCase, async: true
+  import Grizzler.TestHelpers
+  
+  describe "fast test data setup" do
+    test "loads relationships correctly" do
+      user = create_user()
+      post = create_post(user: user)
+      
+      # Test loading, not creation
+      loaded = Blog.Post |> Ash.get!(post.id, load: [:user])
+      assert loaded.user.id == user.id
+    end
+  end
+  
+  describe "business logic validation" do
+    test "validates required fields" do
+      user = create_user()  # Fast setup
+      
+      # Test the actual validation
+      assert {:error, changeset} = 
+        Blog.Post
+        |> Ash.Changeset.for_create(:create, %{user_id: user.id})
+        |> Ash.create()
+      
+      assert changeset.errors[:title]
+      assert changeset.errors[:content]
+    end
+  end
+end
+```
+
+## Performance Impact
+
+```elixir
+# Benchmark: Creating 1000 test records
+
+# Ash.Seed.seed! approach
+Enum.each(1..1000, fn i ->
+  Ash.Seed.seed!(User, %{email: "user#{i}@test.com"})
+end)
+# ~200ms
+
+# Action-based approach  
+Enum.each(1..1000, fn i ->
+  User
+  |> Ash.Changeset.for_create(:create, %{email: "user#{i}@test.com"})
+  |> Ash.create!()
+end)
+# ~2000ms (10x slower)
+```
+
+## References
+
+- [Testing TDD Guide](mdc:.cursor/resources/testing_tdd.md) (`.cursor/resources/testing_tdd.md`) - Comprehensive Ash.Seed.seed! patterns and testing strategies
+- [Official Ash.Seed Documentation](mdc:https:/hexdocs.pm/ash/Ash.Seed.html) (hexdocs.pm/ash/Ash.Seed.html) - API reference
+- [Project Patterns](mdc:.cursor/resources/project_patterns.md) (`.cursor/resources/project_patterns.md`) - Ash best practices
+
+**Remember: Use Ash.Seed.seed! for fast test setup, actions for testing business logic.**

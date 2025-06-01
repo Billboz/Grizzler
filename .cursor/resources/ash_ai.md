@@ -270,4 +270,4 @@ When testing AI components:
 
 ---
 
-*This guide covers Ash AI integration patterns for Ash Framework 3.5.9. For the latest features and API changes, consult the [official AshAi documentation](https://hexdocs.pm/ash_ai/).* 
+*This guide covers Ash AI integration patterns for Ash Framework 3.5.13. For the latest features and API changes, consult the [official AshAi documentation](https://hexdocs.pm/ash_ai/).* 

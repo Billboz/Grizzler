@@ -5,7 +5,7 @@
 
 ## Overview
 
-This document captures real, working Ash patterns and lessons learned from the Grizzler project. All examples are version-matched for Ash 3.5.9 and are based on actual, tested code in this codebase.
+This document captures real, working Ash patterns and lessons learned from the Grizzler project. All examples are version-matched for Ash 3.5.13 and are based on actual, tested code in this codebase.
 
 ## Minimal, Working Ash CRUD Patterns
 
@@ -161,7 +161,7 @@ end
 - Use `accept [...]` in actions to whitelist permitted fields for create/update.
 - Do not use deprecated or unsupported validation macros; prefer attribute constraints for simple validations.
 
-### General Ash 3.5.9 Lessons
+### General Ash 3.5.13 Lessons
 - Place all validations and constraints in the attributes block when possible.
 - Use the official docs for version-matched patterns.
 
@@ -187,7 +187,7 @@ Follow this checklist whenever developing a new Ash resource in this project. Th
    - Reference the relevant test or resource file.
 
 5. **Reference Version-Matched Documentation**
-   - Always use the official docs and guides for Ash 3.5.9.
+   - Always use the official docs and guides for Ash 3.5.13.
    - Prefer patterns that match the project's Ash, Phoenix, and Elixir versions.
 
 6. **Continuous Improvement**
@@ -199,7 +199,7 @@ Follow this checklist whenever developing a new Ash resource in this project. Th
 *From original ash_patterns_and_lessons.md:*
 - [test/grizzler/tasks/task_test.exs](../test/grizzler/tasks/task_test.exs)
 - [lib/grizzler/tasks/task.ex](../lib/grizzler/tasks/task.ex)
-- [Ash 3.5.9 Docs](https://hexdocs.pm/ash/3.5.9/)
+- [Ash 3.5.13 Docs](https://hexdocs.pm/ash/3.5.13/)
 
 ---
 
@@ -207,7 +207,7 @@ Follow this checklist whenever developing a new Ash resource in this project. Th
 
 ## Advanced Project-Specific Lessons
 
-### UserTask Resource & Test Patterns (Ash 3.5.9)
+### UserTask Resource & Test Patterns (Ash 3.5.13)
 
 From real implementation experience on the Grizzler project:
 
@@ -265,6 +265,6 @@ From real implementation experience on the Grizzler project:
 #### Reference Pattern
 
 - **Reference canonical sources for all resource, action, and policy patterns**
-  - See [ash.md](ash.md) for comprehensive Ash 3.5.9 patterns
+  - See [ash.md](ash.md) for comprehensive Ash 3.5.13 patterns
   - Check project-specific patterns in this file for real-world gotchas
   - Use version-matched documentation for implementation details 

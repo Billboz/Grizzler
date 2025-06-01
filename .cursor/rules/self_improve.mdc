@@ -3,6 +3,17 @@ description: Guidelines for continuously improving Cursor rules based on emergin
 globs: **/*
 alwaysApply: true
 ---
+- **Git-Integrated Rule Improvement Workflow:**
+  - **During subtask completion**, when suggesting a git commit message, also provide a self-improvement trigger prompt
+  - **Format**: "Commit: [suggested commit message]\n\nRule Review: [trigger text for rule analysis]"
+  - **Trigger examples**:
+    - "New Ash pattern discovered: [describe pattern]"
+    - "Repeated implementation approach: [describe approach]"
+    - "New debugging technique used: [describe technique]"
+    - "Error pattern that could be prevented: [describe pattern]"
+    - "New library integration pattern: [describe pattern]"
+  - **User workflow**: Copy commit message → Paste trigger text in chat → System updates rules → Commit all changes
+  - **This ensures rule evolution happens at the natural point when implementation insights are fresh**
 
 - **Rule Improvement Triggers:**
   - New code patterns not covered by existing rules
@@ -10,6 +21,9 @@ alwaysApply: true
   - Common error patterns that could be prevented
   - New libraries or tools being used consistently
   - Emerging best practices in the codebase
+  - **If a new Ash pattern, workaround, or lesson is generated, propose an update to Ash resources if it is not already documented.**
+  - If a new library or version is added, update the Documents section and documentation usage rule accordingly.
+  - **If a new Ash test/query pattern is discovered, update the ash_patterns.mdc.**
 
 - **Analysis Process:**
   - Compare new code with existing rules
@@ -32,17 +46,25 @@ alwaysApply: true
     - Implementation details have changed
 
 - **Example Pattern Recognition:**
-  ```typescript
-  // If you see repeated patterns like:
-  const data = await prisma.user.findMany({
-    select: { id: true, email: true },
-    where: { status: 'ACTIVE' }
-  });
+  ```elixir
+  # If you see repeated Ash patterns like:
+  defmodule MyApp.User do
+    use Ash.Resource, domain: MyApp.Accounts
+    
+    attributes do
+      uuid_primary_key :id
+      attribute :email, :ci_string, allow_nil?: false
+    end
+    
+    actions do
+      defaults [:create, :read, :update, :destroy]
+    end
+  end
   
-  // Consider adding to [prisma.mdc](mdc:.cursor/rules/prisma.mdc):
-  // - Standard select fields
-  // - Common where conditions
-  // - Performance optimization patterns
+  # Consider adding to [ash_patterns.mdc](mdc:.cursor/rules/ash_patterns.mdc):
+  # - Standard attribute patterns
+  # - Common action configurations
+  # - Policy patterns
   ```
 
 - **Rule Quality Checks:**
@@ -69,4 +91,8 @@ alwaysApply: true
   - Update references to external docs
   - Maintain links between related rules
   - Document breaking changes
+
+- **When analyzing errors or repeated issues, always reference [debugging.mdc](mdc:.cursor/rules/debugging.mdc) for recommended Elixir debugging tools and techniques.**
+- When updating or creating rules related to troubleshooting, ensure suggestions for IO.inspect, dbg, and Tidewave are included as per [debugging.mdc](mdc:.cursor/rules/debugging.mdc).
+
 Follow [cursor_rules.mdc](mdc:.cursor/rules/cursor_rules.mdc) for proper rule formatting and structure.

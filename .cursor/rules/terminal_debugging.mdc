@@ -1,5 +1,224 @@
 ---
-description:
-globs:
+description: 
+globs: **/*.ex,**/*.exs,mix.exs,*.md
 alwaysApply: false
 ---
+---
+description: Terminal and command-line debugging techniques for development workflow
+globs: **/*
+alwaysApply: false
+---
+
+# Terminal Command Best Practices
+
+**Use specific patterns to avoid terminal hang-ups and ensure commands complete properly in MCP/Cursor environment.**
+
+## Core Issues and Solutions
+
+### 1. Pager Commands Cause Hang-ups
+
+❌ **Commands that open pagers will hang**
+```bash
+mix help                    # Opens pager
+git log                     # Opens pager
+mix deps.tree              # Opens pager
+grep -r "pattern" .        # Large output opens pager
+```
+
+✅ **Always pipe to cat to prevent pagers**
+```bash
+mix help | cat
+git log --oneline | cat
+mix deps.tree | cat
+grep -r "pattern" . | cat
+```
+
+### 2. Use Specific grep Options
+
+❌ **Basic grep can hang on large results**
+```bash
+grep -r "tidewave" .       # May hang, opens pager
+```
+
+✅ **Use grep with limits and no pager**
+```bash
+grep -r "tidewave" . | head -20 | cat
+rg "tidewave" --max-count=10        # ripgrep with limits
+find . -name "*.ex" -exec grep -l "tidewave" {} \; | cat
+```
+
+### 3. Interactive Commands Need Non-Interactive Flags
+
+❌ **Interactive commands will hang**
+```bash
+mix ash.gen.resource            # Prompts for input
+npm install                     # May prompt
+mix deps.get                    # May prompt for hex/rebar
+```
+
+✅ **Use non-interactive flags**
+```bash
+mix ash.gen.resource MyApp.Resource --yes
+npm install --yes
+mix deps.get --force
+mix hex.info package --force
+```
+
+### 4. Long Output Commands
+
+❌ **Commands with long output can hang**
+```bash
+mix test --verbose             # Very long output
+iex -S mix                     # Interactive shell
+mix phx.server                 # Long-running server
+```
+
+✅ **Use output limiting or background**
+```bash
+mix test --verbose | head -50 | cat
+# For long-running: set is_background: true
+# For interactive: avoid in MCP context
+```
+
+## Specific Command Patterns
+
+### Mix Commands
+```bash
+# Good patterns for mix commands
+mix help | cat
+mix deps.tree | cat
+mix test test/specific_test.exs | cat
+mix ash.codegen --yes | cat
+mix ecto.migrate | cat
+
+# Check specific dependencies
+mix deps.tree | grep "dependency_name" | cat
+```
+
+### Git Commands  
+```bash
+# Good patterns for git
+git status --porcelain | cat
+git log --oneline -10 | cat
+git diff --name-only | cat
+git branch | cat
+```
+
+### Search Commands
+```bash
+# Use ripgrep (rg) instead of grep when possible
+rg "pattern" --max-count=10
+rg "pattern" --type elixir --max-count=5
+
+# If using grep, limit output
+grep -r "pattern" . | head -20 | cat
+find . -name "*.ex" -exec grep -l "pattern" {} \; | cat
+```
+
+### File Operations
+```bash
+# Safe file viewing
+head -50 filename | cat
+tail -20 filename | cat
+cat filename        # Only for small files
+
+# File system operations
+ls -la | cat
+find . -name "*.ex" | head -20 | cat
+```
+
+## MCP-Specific Patterns
+
+### For Code Generation
+```bash
+# Always use --yes flags for generators
+mix ash.gen.resource MyApp.Resource \
+  --domain MyApp.Domain \
+  --yes | cat
+
+mix phoenix.gen.context Accounts User users \
+  email:string \
+  --yes | cat
+```
+
+### For Test Running
+```bash
+# Limit test output to prevent hang-ups
+mix test test/specific_file_test.exs | cat
+mix test --failed | cat
+mix test --max-failures=3 | cat
+```
+
+### For Development Server Commands
+```bash
+# Never run these in MCP - they're long-running
+# mix phx.server
+# iex -S mix
+
+# Instead, mention that user should run these separately
+echo "Run 'mix phx.server' in a separate terminal for development server"
+```
+
+## Debugging Terminal Issues
+
+### If Terminal Hangs
+1. **User should click "Skip" in Cursor interface**
+2. **Agent may try pressing 'q' to exit pager**
+3. **Use `| cat` pattern for next similar command**
+
+### Common Hang Scenarios
+```bash
+# These commonly cause hangs:
+mix help                    # → mix help | cat
+git log                     # → git log --oneline -10 | cat
+mix deps.tree              # → mix deps.tree | cat
+grep -r "pattern" .        # → rg "pattern" --max-count=10
+less filename              # → head -50 filename | cat
+```
+
+### Recovery Patterns
+```bash
+# If a command hangs, next time use:
+command_that_hung | head -50 | cat
+command_that_hung --max-results=10 | cat
+command_that_hung --quiet | cat
+```
+
+## Recommended Terminal Workflow
+
+1. **Plan the command** - Will it have long output? Is it interactive?
+2. **Add appropriate flags** - `--yes`, `--force`, `--quiet`
+3. **Pipe to cat** - For commands that might open pagers
+4. **Limit output** - Use `head`, `tail`, or tool-specific limits
+5. **Test first** - Try with small scope before broad searches
+
+## Tool-Specific Best Practices
+
+### Elixir/Phoenix
+```bash
+mix help | cat
+mix test path/to/test.exs | cat
+mix deps.tree | grep "ash" | cat
+mix ash.codegen --yes | cat
+```
+
+### Git
+```bash
+git status --porcelain | cat
+git diff --name-only | cat
+git log --oneline -10 | cat
+```
+
+### Search
+```bash
+rg "pattern" --type elixir --max-count=5
+find . -name "*.ex" | head -10 | cat
+ls -la lib/ | cat
+```
+
+## References
+
+- [dev_workflow.mdc](mdc:.cursor/rules/dev_workflow.mdc) for overall development workflow
+- [debugging.mdc](mdc:.cursor/rules/debugging.mdc) for debugging best practices
+
+**Remember: Always assume the terminal environment cannot handle interactive commands or long outputs without proper safeguards.**
